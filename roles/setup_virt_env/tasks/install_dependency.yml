@@ -1,0 +1,8 @@
+---
+- name: install pip packages
+  ansible.builtin.pip:
+    name: 
+      - requests==2.31.0
+      - docker
+      - docker-compose
+    state: present

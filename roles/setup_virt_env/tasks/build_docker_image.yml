@@ -1,0 +1,35 @@
+---
+- name: Make directory
+  ansible.builtin.file:
+    path: "{{ dst_docker_dir }}"
+    owner: "{{ user_name }}"
+    group: "{{ user_name }}"
+    mode: "0755"
+    state: directory
+
+- name: Copy public key
+  ansible.posix.synchronize:
+    src: "/home/{{ user_name }}/.ssh/id_rsa.pub"
+    dest: "{{ dst_docker_dir }}/id_rsa.pub"
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Get uid
+  ansible.builtin.gather_facts:
+
+- name: Set uid
+  ansible.builtin.set_fact:
+    user_id: "{{ ansible_user_uid }}"
+
+- name: Copy docker file
+  ansible.builtin.template:
+    src: "{{ src_docker_file }}"
+    dest: "{{ dst_docker_file }}"
+    mode: "0644"
+
+- name: Build docker image
+  community.docker.docker_image:
+    build:
+      path: "{{ dst_docker_dir }}"
+    source: "build"
+    name: "{{ image_name }}"
+    state: "present"

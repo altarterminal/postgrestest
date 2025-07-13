@@ -1,0 +1,5 @@
+---
+- import_tasks: ./check_prerequisite.yml
+- import_tasks: ./install_dependency.yml
+- import_tasks: ./build_docker_image.yml
+- import_tasks: ./run_docker_container.yml

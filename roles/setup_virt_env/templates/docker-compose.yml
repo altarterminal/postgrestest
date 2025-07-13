@@ -1,0 +1,11 @@
+services:
+  {{ container_name }}:
+    build: "{{ dst_docker_dir }}"
+    image: "{{ image_name }}"
+    container_name: "{{ container_name }}"
+    restart: always
+    ports:
+      - "{{ ssh_port }}:22"
+      - "{{ postgres_port }}:5432"
+    expose:
+      - "5432"

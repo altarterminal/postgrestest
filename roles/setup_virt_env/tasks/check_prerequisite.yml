@@ -1,0 +1,15 @@
+---
+- name: Check docker is installed
+  ansible.builtin.shell: "type docker >/dev/null 2>&1"
+  register: result
+  changed_when: result.rc != 0
+
+- name: Check rsync is installed
+  ansible.builtin.shell: "type rsync >/dev/null 2>&1"
+  register: result
+  changed_when: result.rc != 0
+
+- name: Check user exist
+  ansible.builtin.shell: "id {{ user_name }} >/dev/null 2>&1" 
+  register: result
+  changed_when: result.rc != 0

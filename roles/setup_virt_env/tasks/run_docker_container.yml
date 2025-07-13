@@ -1,0 +1,25 @@
+---
+- name: Make directory
+  ansible.builtin.file:
+    path: "{{ dst_compose_dir }}"
+    owner: "{{ user_name }}"
+    group: "{{ user_name }}"
+    mode: "0755"
+    state: directory
+
+- name: Copy compose file
+  ansible.builtin.template:
+    src: "{{ src_compose_file }}"
+    dest: "{{ dst_compose_file }}"
+    mode: "0644"
+
+- name: Stop existing container
+  community.docker.docker_compose_v2:
+    project_src: "{{ dst_compose_dir }}"
+    state: "absent"
+
+- name: Run container
+  community.docker.docker_compose_v2:
+    project_src: "{{ dst_compose_dir }}"
+    build: "never"
+    state: "present"
