@@ -1,5 +1,5 @@
 ---
-- name: Make directory
+- name: Make docker file directory
   ansible.builtin.file:
     path: "{{ dst_docker_dir }}"
     owner: "{{ user_name }}"

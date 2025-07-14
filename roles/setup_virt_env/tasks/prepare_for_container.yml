@@ -1,0 +1,8 @@
+---
+- name: Make shared directory
+  ansible.builtin.file:
+    path: "{{ share_dir_on_baremetal }}"
+    owner: "{{ user_name }}"
+    group: "{{ user_name }}"
+    mode: "0755"
+    state: directory

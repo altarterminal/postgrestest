@@ -7,5 +7,8 @@ src_compose_file: "templates/docker-compose.yml"
 dst_compose_dir:  "/home/{{ user_name }}/db_env/composefile"
 dst_compose_file: "{{ dst_compose_dir }}/docker-compose.yml"
 
+share_dir_on_baremetal: "/home/{{ user_name }}/db_env/share"
+share_dir_on_container: "/home/{{ user_name }}/share"
+
 image_name:     "ubuntu_for_db_image"
 container_name: "ubuntu_for_db_container"
