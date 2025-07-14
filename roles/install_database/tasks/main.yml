@@ -1,0 +1,4 @@
+---
+- import_tasks: ./install_postgres_pre.yml
+- import_tasks: ./install_postgres_main.yml
+- import_tasks: ./install_postgres_post.yml

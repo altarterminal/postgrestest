@@ -1,0 +1,54 @@
+---
+- name: Make temp file
+  ansible.builtin.tempfile:
+  register: temp_gpg
+
+- name: Download temp gpg
+  ansible.builtin.get_url:
+    url: "{{ postgres_gpg_url }}"
+    dest: "{{ temp_gpg.path }}"
+    force: true
+    owner: "{{ user_name }}"
+    group: "{{ user_name }}"
+    mode: "0644"
+    use_proxy: "{{ proxy_setting != '' }}"
+  environment:
+    http_proxy: "http://{{ proxy_setting }}"
+    https_proxy: "http://{{ proxy_setting }}"
+
+- name: Prepare gpg directory
+  ansible.builtin.file:
+    path: "{{ postgres_gpg_path | dirname }}"
+    owner: root
+    group: root
+    mode: "0755"
+    state: directory
+  become: true
+
+- name: Delete old gpg (cannot skip this)
+  ansible.builtin.file:
+    path: "{{ postgres_gpg_path }}"
+    state: absent
+  become: true
+
+- name: Register external repository
+  ansible.builtin.shell: |
+    gpg --dearmor -o "{{ postgres_gpg_path }}" "{{ temp_gpg.path }}"
+
+    printf 'deb [signed-by=%s] %s %s-pgdg main\n'                \
+      "{{ postgres_gpg_path }}" "{{ postgres_download_url }}"    \
+      "$(lsb_release -cs)"                                       \
+      >"{{ postgres_list_path }}"
+  become: true
+
+- name: Delete temp gpg
+  ansible.builtin.file:
+    path: "{{ temp_gpg.path }}"
+    state: absent
+
+- name: Install
+  ansible.builtin.apt:
+    update_cache: true
+    name:
+      - postgresql
+  become: true

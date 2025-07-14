@@ -1,0 +1,9 @@
+---
+- name: Install dependency
+  ansible.builtin.apt:
+    update_cache: true
+    name:
+      - ca-certificates
+      - gnupg
+      - lsb-release
+  become: true
