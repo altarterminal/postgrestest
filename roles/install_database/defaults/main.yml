@@ -1,5 +1,2 @@
 ---
 proxy_setting: ""
-
-localhost_ip: "127.0.0.1/32"
-localnet_ip:  "172.18.0.0/16"
