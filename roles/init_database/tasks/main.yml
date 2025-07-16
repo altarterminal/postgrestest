@@ -1,0 +1,5 @@
+---
+- import_tasks: ./install_dependency.yml
+- import_tasks: ./init_data.yml
+- import_tasks: ./create_connection_setting.yml
+- import_tasks: ./start_postgres.yml

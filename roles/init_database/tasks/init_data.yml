@@ -1,0 +1,4 @@
+---
+- name: Init database
+  ansible.builtin.shell: |
+    {{ postgres_bin_dir }}/initdb "{{ postgres_data_dir }}"

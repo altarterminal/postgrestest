@@ -1,0 +1,12 @@
+---
+- name: Install apt packages
+  ansible.builtin.apt:
+    update_cache: true
+    name:
+      - libpq-dev
+  become: true
+
+- name: Install pip packages
+  ansible.builtin.pip:
+    name:
+      - psycopg2

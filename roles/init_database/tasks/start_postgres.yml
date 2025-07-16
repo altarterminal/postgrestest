@@ -1,0 +1,4 @@
+---
+- name: Start service
+  ansible.builtin.shell: |
+    {{ postgres_bin_dir }}/pg_ctl -D "{{ postgres_data_dir }}" -w -t 60 start
