@@ -11,7 +11,7 @@ RUN if [ -n "${proxy_setting}" ]; then echo 'Acquire::https::Proxy "http://'"${p
 # settings for packages
 RUN apt update && apt upgrade -y
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata
-RUN apt install -y sudo locales bash-completion openssh-server vim net-tools
+RUN apt install -y sudo locales bash-completion openssh-server net-tools iputils-ping python3-pip vim
 
 # settings for timezone
 RUN ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime

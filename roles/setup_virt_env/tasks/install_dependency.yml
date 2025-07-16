@@ -5,4 +5,3 @@
       - requests==2.31.0
       - docker
       - docker-compose
-    state: present
