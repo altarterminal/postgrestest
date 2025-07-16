@@ -1,4 +1,18 @@
 ---
-- name: Init database
+- name: Get exisiting stat
+  ansible.builtin.stat:
+    path: "{{ postgres_data_dir }}"
+  register: properties
+
+- name: Check files if it is a directory
+  ansible.builtin.find:
+    paths: "{{ postgres_data_dir }}"
+    file_type: any
+  register: found_files
+  when: properties.stat.exists and properties.stat.isdir
+
+- name: Init data
   ansible.builtin.shell: |
     {{ postgres_bin_dir }}/initdb "{{ postgres_data_dir }}"
+  when: ( properties.stat.exists and properties.stat.isdir and found_files.matched == 0 )
+    or  ( not properties.stat.exists )
