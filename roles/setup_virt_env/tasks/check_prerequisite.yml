@@ -10,6 +10,6 @@
   changed_when: result.rc != 0
 
 - name: Check user exist
-  ansible.builtin.shell: "id {{ user_name }} >/dev/null 2>&1" 
+  ansible.builtin.shell: "id {{ user_name }} >/dev/null 2>&1"
   register: result
   changed_when: result.rc != 0

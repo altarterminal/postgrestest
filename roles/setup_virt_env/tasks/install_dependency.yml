@@ -1,7 +1,7 @@
 ---
-- name: install pip packages
+- name: Install pip packages
   ansible.builtin.pip:
-    name: 
+    name:
       - requests==2.31.0
       - docker
       - docker-compose
