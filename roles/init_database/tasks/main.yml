@@ -7,7 +7,7 @@
   ansible.builtin.import_tasks: ./init_data.yml
   tags: init_data
 
-- name: Import create_connection_setting
+- name: Import create connection setting
   ansible.builtin.import_tasks: ./create_connection_setting.yml
   tags: create_connection_setting
 
