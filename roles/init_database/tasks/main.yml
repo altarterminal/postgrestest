@@ -1,5 +1,16 @@
 ---
-- import_tasks: ./install_dependency.yml
-- import_tasks: ./init_data.yml
-- import_tasks: ./create_connection_setting.yml
-- import_tasks: ./start_postgres.yml
+- name: Import install dependency
+  ansible.builtin.import_tasks: ./install_dependency.yml
+  tags: install_dependency
+
+- name: Import init data
+  ansible.builtin.import_tasks: ./init_data.yml
+  tags: init_data
+
+- name: Import create_connection_setting
+  ansible.builtin.import_tasks: ./create_connection_setting.yml
+  tags: create_connection_setting
+
+- name: Import start database
+  ansible.builtin.import_tasks: ./start_database.yml
+  tags: start_database

@@ -1,6 +1,20 @@
 ---
-- import_tasks: ./check_prerequisite.yml
-- import_tasks: ./install_dependency.yml
-- import_tasks: ./build_docker_image.yml
-- import_tasks: ./prepare_for_container.yml
-- import_tasks: ./run_docker_container.yml
+- name: Import check prerequisite
+  ansible.builtin.import_tasks: ./check_prerequisite.yml
+  tags: check_prerequisite
+
+- name: Import install dependency
+  ansible.builtin.import_tasks: ./install_dependency.yml
+  tags: install_dependency
+
+- name: Import build docker image
+  ansible.builtin.import_tasks: ./build_docker_image.yml
+  tags: build_docker_image
+
+- name: Import prepare for container
+  ansible.builtin.import_tasks: ./prepare_for_container.yml
+  tags: prepare_for_container
+
+- name: Import run docker container
+  ansible.builtin.import_tasks: ./run_docker_container.yml
+  tags: run_docker_container
