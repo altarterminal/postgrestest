@@ -16,3 +16,4 @@
     {{ postgres_bin_dir }}/initdb "{{ postgres_data_dir }}"
   when: ( properties.stat.exists and properties.stat.isdir and found_files.matched == 0 )
     or  ( not properties.stat.exists )
+  changed_when: true
