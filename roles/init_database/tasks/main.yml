@@ -14,3 +14,11 @@
 - name: Import start database
   ansible.builtin.import_tasks: ./start_database.yml
   tags: start_database
+
+- name: Import create database
+  ansible.builtin.import_tasks: ./create_database.yml
+  tags: create_database
+
+- name: Import create role
+  ansible.builtin.import_tasks: ./create_role.yml
+  tags: create_role

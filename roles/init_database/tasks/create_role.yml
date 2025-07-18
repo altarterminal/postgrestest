@@ -1,0 +1,31 @@
+---
+- name: Create administrator role
+  community.postgresql.postgresql_user:
+    name: "{{ admin_role_name }}"
+    role_attr_flags: "CREATEDB,CREATEROLE"
+    login_host: "{{ db_host }}"
+    port: "{{ db_port }}"
+
+- name: Create manage schema role
+  community.postgresql.postgresql_user:
+    name: "{{ manage_schema_role_name }}"
+    role_attr_flags: "LOGIN"
+    login_host: "{{ db_host }}"
+    port: "{{ db_port }}"
+    login_user: "{{ admin_role_name }}"
+
+- name: Create manage table role
+  community.postgresql.postgresql_user:
+    name: "{{ manage_table_role_name }}"
+    role_attr_flags: "LOGIN"
+    login_host: "{{ db_host }}"
+    port: "{{ db_port }}"
+    login_user: "{{ admin_role_name }}"
+
+- name: Create refer role
+  community.postgresql.postgresql_user:
+    name: "{{ refer_role_name }}"
+    role_attr_flags: "LOGIN"
+    login_host: "{{ db_host }}"
+    port: "{{ db_port }}"
+    login_user: "{{ admin_role_name }}"

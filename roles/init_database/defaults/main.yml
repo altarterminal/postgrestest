@@ -2,3 +2,25 @@
 localhost_ip: "127.0.0.1/24"
 dockernet_ip: "172.18.0.1/16"
 localnet_ip:  "192.168.11.1/8"
+
+db_name: "eval_database"
+
+admin_role_name: "admin_role"
+
+manage_schema_role_name: "manage_schema_role"
+manage_table_role_name:  "manage_table_role"
+
+#manage_master_role_name:      "manage_master_role"
+#manage_transaction_role_name: "manage_transaction_role"
+#manage_param_role_name:       "manage_param_role"
+
+refer_role_name: "refer_role"
+
+common_schema_name:     "common_schema"
+device_xxx_schema_name: "device_xxx_schema"
+
+image_table_name:      "image_table"
+realdevice_table_name: "realdevice_table"
+
+input_description_table_name:  "input_description_table"
+output_description_table_name: "output_description_table"
