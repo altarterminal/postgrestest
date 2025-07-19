@@ -2,7 +2,7 @@
 - name: Create administrator role
   community.postgresql.postgresql_user:
     name: "{{ admin_role_name }}"
-    role_attr_flags: "CREATEDB,CREATEROLE"
+    role_attr_flags: "LOGIN,CREATEDB,CREATEROLE"
     login_host: "{{ db_host }}"
     port: "{{ db_port }}"
 
