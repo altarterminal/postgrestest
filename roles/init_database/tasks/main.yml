@@ -11,9 +11,9 @@
   ansible.builtin.import_tasks: ./create_connection_setting.yml
   tags: create_connection_setting
 
-- name: Import start database
-  ansible.builtin.import_tasks: ./start_database.yml
-  tags: start_database
+- name: Import start service
+  ansible.builtin.import_tasks: ./start_service.yml
+  tags: start_service
 
 - name: Import create database
   ansible.builtin.import_tasks: ./create_database.yml
