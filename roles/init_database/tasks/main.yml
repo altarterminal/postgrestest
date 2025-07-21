@@ -15,10 +15,14 @@
   ansible.builtin.import_tasks: ./start_service.yml
   tags: start_service
 
+- name: Import create role
+  ansible.builtin.import_tasks: ./create_role.yml
+  tags: create_role
+
 - name: Import create database
   ansible.builtin.import_tasks: ./create_database.yml
   tags: create_database
 
-- name: Import create role
-  ansible.builtin.import_tasks: ./create_role.yml
-  tags: create_role
+- name: Import create schema
+  ansible.builtin.import_tasks: ./create_schema.yml
+  tags: create_schema

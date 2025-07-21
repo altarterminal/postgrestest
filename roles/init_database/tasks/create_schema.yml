@@ -1,0 +1,56 @@
+---
+- name: Create common schema
+  community.postgresql.postgresql_schema:
+    name: "{{ common_schema_name }}"
+    login_host: "{{ db_host }}"
+    port: "{{ db_port }}"
+    login_user: "{{ admin_role_name }}"
+    login_db: "{{ db_name }}"
+
+- name: Grant to read common schema
+  community.postgresql.postgresql_privs:
+    privs: USAGE
+    objs: "{{ common_schema_name }}"
+    type: schema
+    roles: "{{ manage_table_role_name }},{{ refer_role_name }}"
+    grant_option: true
+    login_host: "{{ db_host }}"
+    port: "{{ db_port }}"
+    login_user: "{{ admin_role_name }}"
+    login_db: "{{ db_name }}"
+
+- name: Grant to write common schema
+  community.postgresql.postgresql_privs:
+    privs: CREATE
+    objs: "{{ common_schema_name }}"
+    type: schema
+    roles: "{{ manage_table_role_name }}"
+    grant_option: true
+    login_host: "{{ db_host }}"
+    port: "{{ db_port }}"
+    login_user: "{{ admin_role_name }}"
+    login_db: "{{ db_name }}"
+
+- name: Grant to read table in common schema
+  community.postgresql.postgresql_privs:
+    privs: SELECT
+    objs: ALL_IN_SCHEMA
+    type: table
+    roles: "{{ manage_table_role_name }},{{ refer_role_name }}"
+    grant_option: true
+    login_host: "{{ db_host }}"
+    port: "{{ db_port }}"
+    login_user: "{{ admin_role_name }}"
+    login_db: "{{ db_name }}"
+
+- name: Grant to write table in common schema
+  community.postgresql.postgresql_privs:
+    privs: INSERT,UPDATE
+    objs: ALL_IN_SCHEMA
+    type: table
+    roles: "{{ manage_table_role_name }}"
+    grant_option: true
+    login_host: "{{ db_host }}"
+    port: "{{ db_port }}"
+    login_user: "{{ admin_role_name }}"
+    login_db: "{{ db_name }}"
