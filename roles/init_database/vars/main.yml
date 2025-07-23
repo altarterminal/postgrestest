@@ -3,3 +3,12 @@ postgres_major_ver: "14"
 
 postgres_bin_dir:  "/usr/lib/postgresql/{{ postgres_major_ver }}/bin"
 postgres_data_dir: "/var/lib/postgresql/data"
+
+db_host: "{{ ansible_host }}"
+db_port: "55432"
+
+image_list_file: "../files/image_list.json"
+image_list: "{{ lookup('file', image_list_file) | from_json }}"
+
+realdevice_list_file: "../files/realdevice_list.json"
+realdevice_list: "{{ lookup('file', realdevice_list_file) | from_json }}"
