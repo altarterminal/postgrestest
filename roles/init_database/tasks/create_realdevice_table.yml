@@ -1,0 +1,51 @@
+---
+- name: Create realdevice table
+  community.postgresql.postgresql_table:
+    name: "{{ common_schema_name }}.{{ realdevice_table_name }}"
+    columns:
+      - realdevice_id     SERIAL
+      - realdevice_model  VARCHAR(32)
+      - realdevice_rev    VARCHAR(32)
+      - realdevice_serial VARCHAR(8)
+    login_host: "{{ db_host }}"
+    port: "{{ db_port }}"
+    login_db: "{{ db_name }}"
+    login_user: "{{ manage_table_role_name }}"
+
+- name: Grant to read realdevice table
+  community.postgresql.postgresql_privs:
+    privs: SELECT
+    schema: "{{ common_schema_name }}"
+    objs: "{{ realdevice_table_name }}"
+    type: table
+    roles: "{{ manage_table_role_name }},{{ refer_role_name }}"
+    grant_option: true
+    login_host: "{{ db_host }}"
+    port: "{{ db_port }}"
+    login_user: "{{ manage_table_role_name }}"
+    login_db: "{{ db_name }}"
+
+- name: Grant to write realdevice table
+  community.postgresql.postgresql_privs:
+    privs: SELECT
+    schema: "{{ common_schema_name }}"
+    objs: "{{ realdevice_table_name }}"
+    type: table
+    roles: "{{ manage_table_role_name }}"
+    grant_option: true
+    login_host: "{{ db_host }}"
+    port: "{{ db_port }}"
+    login_user: "{{ manage_table_role_name }}"
+    login_db: "{{ db_name }}"
+
+- name: Insert init data inito realdevice table
+  community.postgresql.postgresql_query:
+    query: |
+      INSERT INTO {{ common_schema_name }}.{{ realdevice_table_name }}
+      ( realdevice_model, realdevice_rev, realdevice_serial ) VALUES
+      ( '{{ item.model }}', '{{ item.rev }}', '{{ item.serial }}' )
+    login_host: "{{ db_host }}"
+    port: "{{ db_port }}"
+    login_db: "{{ db_name }}"
+    login_user: "{{ manage_table_role_name }}"
+  loop: "{{ realdevice_list }}"

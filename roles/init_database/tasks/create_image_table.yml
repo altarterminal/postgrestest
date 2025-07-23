@@ -1,0 +1,50 @@
+---
+- name: Create image table
+  community.postgresql.postgresql_table:
+    name: "{{ common_schema_name }}.{{ image_table_name }}"
+    columns:
+      - image_id     SERIAL
+      - image_name   TEXT
+      - image_md5sum VARCHAR(32)
+    login_host: "{{ db_host }}"
+    port: "{{ db_port }}"
+    login_db: "{{ db_name }}"
+    login_user: "{{ manage_table_role_name }}"
+
+- name: Grant to read image table
+  community.postgresql.postgresql_privs:
+    privs: SELECT
+    schema: "{{ common_schema_name }}"
+    objs: "{{ image_table_name }}"
+    type: table
+    roles: "{{ manage_table_role_name }},{{ refer_role_name }}"
+    grant_option: true
+    login_host: "{{ db_host }}"
+    port: "{{ db_port }}"
+    login_user: "{{ manage_table_role_name }}"
+    login_db: "{{ db_name }}"
+
+- name: Grant to write image table
+  community.postgresql.postgresql_privs:
+    privs: SELECT
+    schema: "{{ common_schema_name }}"
+    objs: "{{ image_table_name }}"
+    type: table
+    roles: "{{ manage_table_role_name }}"
+    grant_option: true
+    login_host: "{{ db_host }}"
+    port: "{{ db_port }}"
+    login_user: "{{ manage_table_role_name }}"
+    login_db: "{{ db_name }}"
+
+- name: Insert init data into image table
+  community.postgresql.postgresql_query:
+    query: |
+      INSERT INTO {{ common_schema_name }}.{{ image_table_name }}
+      ( image_name, image_md5sum ) VALUES
+      ( '{{ item.name }}', '{{ item.md5sum }}' )
+    login_host: "{{ db_host }}"
+    port: "{{ db_port }}"
+    login_db: "{{ db_name }}"
+    login_user: "{{ manage_table_role_name }}"
+  loop: "{{ image_list }}"

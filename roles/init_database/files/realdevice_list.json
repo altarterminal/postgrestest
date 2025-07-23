@@ -1,0 +1,4 @@
+[
+  { "model": "model_001", "rev":"A", "serial": "abcd1234" },
+  { "model": "model_002", "rev":"C", "serial": "bcde2345" }
+]

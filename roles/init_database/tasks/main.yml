@@ -26,3 +26,11 @@
 - name: Import create schema
   ansible.builtin.import_tasks: ./create_schema.yml
   tags: create_schema
+
+- name: Import create image table
+  ansible.builtin.import_tasks: ./create_image_table.yml
+  tags: create_image_table
+
+- name: Import realdevice table
+  ansible.builtin.import_tasks: ./create_realdevice_table.yml
+  tags: create_realdevice_table
