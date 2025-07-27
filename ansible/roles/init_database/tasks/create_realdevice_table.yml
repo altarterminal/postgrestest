@@ -18,27 +18,14 @@
     schema: "{{ common_schema_name }}"
     objs: "{{ realdevice_table_name }}"
     type: table
-    roles: "{{ manage_table_role_name }},{{ refer_role_name }}"
+    roles: "{{ refer_role_name }}"
     grant_option: true
     login_host: "{{ db_host }}"
     port: "{{ db_port }}"
     login_user: "{{ manage_table_role_name }}"
     login_db: "{{ db_name }}"
 
-- name: Grant to write realdevice table
-  community.postgresql.postgresql_privs:
-    privs: SELECT
-    schema: "{{ common_schema_name }}"
-    objs: "{{ realdevice_table_name }}"
-    type: table
-    roles: "{{ manage_table_role_name }}"
-    grant_option: true
-    login_host: "{{ db_host }}"
-    port: "{{ db_port }}"
-    login_user: "{{ manage_table_role_name }}"
-    login_db: "{{ db_name }}"
-
-- name: Insert init data inito realdevice table
+- name: Insert init data into realdevice table
   community.postgresql.postgresql_query:
     query: |
       INSERT INTO {{ common_schema_name }}.{{ realdevice_table_name }}
