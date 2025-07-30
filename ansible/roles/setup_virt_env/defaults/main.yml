@@ -3,6 +3,3 @@ user_name: "{{ ansible_user }}"
 user_id:   "This is dynamically determined on task execution"
 
 proxy_setting: ""
-
-ssh_port:      50022
-postgres_port: 55432

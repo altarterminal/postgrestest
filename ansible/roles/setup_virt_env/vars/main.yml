@@ -1,4 +1,7 @@
 ---
+ssh_port:      "{{ common_setting.COMMON_VIRT_SSH_PORT}}"
+postgres_port: "{{ common_setting.COMMON_DB_PORT }}"
+
 src_docker_file: "templates/Dockerfile"
 dst_docker_dir:  "/home/{{ user_name }}/db_env/dockerfile"
 dst_docker_file: "{{ dst_docker_dir }}/Dockerfile"
