@@ -1,0 +1,3 @@
+---
+common_setting_file: "{{ role_path }}/../../../common_setting.json"
+common_setting: "{{ lookup('file', common_setting_file) | from_json }}" 
