@@ -1,0 +1,22 @@
+{
+  "COMMON_DB_HOST": "192.168.1.1",
+  "COMMON_DB_PORT": "55432",
+
+  "COMMON_BARE_SSH_PORT": "22",
+  "COMMON_VIRT_SSH_PORT": "50022",
+
+  "COMMON_DB_NAME": "eval_database",
+
+  "COMMON_COMMON_SCHEMA_NAME": "common_schema",
+
+  "COMMON_ADMIN_ROLE_NAME":         "admin_role",
+  "COMMON_MANAGE_SCHEMA_ROLE_NAME": "manage_schema_role",
+  "COMMON_MANAGE_TABLE_ROLE_NAME":  "manage_table_role",
+  "COMMON_REFER_ROLE_NAME":         "refer_role",
+
+  "COMMON_IMAGE_TABLE_NAME":      "image_table",
+  "COMMON_REALDEVICE_TABLE_NAME": "realdevice_table",
+
+  "COMMON_INPUT_DESC_TABLE_NAME":  "input_description_table",
+  "COMMON_OUTPUT_DESC_TABLE_NAME": "output_description_table"
+}
