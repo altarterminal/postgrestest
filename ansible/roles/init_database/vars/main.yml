@@ -5,10 +5,27 @@ postgres_bin_dir:  "/usr/lib/postgresql/{{ postgres_major_ver }}/bin"
 postgres_data_dir: "/var/lib/postgresql/data"
 
 db_host: "{{ ansible_host }}"
-db_port: "55432"
+db_port: "{{ common_setting.COMMON_DB_PORT }}"
 
 image_list_file: "../files/image_list.json"
 image_list: "{{ lookup('file', image_list_file) | from_json }}"
 
 realdevice_list_file: "../files/realdevice_list.json"
 realdevice_list: "{{ lookup('file', realdevice_list_file) | from_json }}"
+
+db_name: "{{ common_setting.COMMON_DB_NAME }}"
+
+common_schema_name: "{{ common_setting.COMMON_COMMON_SCHEMA_NAME }}"
+
+admin_role_name:         "{{ common_setting.COMMON_ADMIN_ROLE_NAME }}"
+manage_schema_role_name: "{{ common_setting.COMMON_MANAGE_SCHEMA_ROLE_NAME }}"
+manage_table_role_name:  "{{ common_setting.COMMON_MANAGE_TABLE_ROLE_NAME }}"
+refer_role_name:         "{{ common_setting.COMMON_REFER_ROLE_NAME }}"
+
+normal_role_names: "{{ manage_schema_role_name }},{{ manage_table_role_name }},{{ refer_role_name }}"
+
+image_table_name:      "{{ common_setting.COMMON_IMAGE_TABLE_NAME }}"
+realdevice_table_name: "{{ common_setting.COMMON_REALDEVICE_TABLE_NAME }}"
+
+input_description_table_name:  "{{ common_setting.COMMON_INPUT_DESCRIPTION_TABLE_NAME }}"
+output_description_table_name: "{{ common_setting.COMMON_OUTPUT_DESCRIPTION_TABLE_NAME }}"
