@@ -35,7 +35,7 @@ export_command=$(
     key=$(printf '%s\n' "${line}" | jq -r '.key')
     val=$(printf '%s\n' "${line}" | jq -r '.value')
 
-    printf 'export %s="%s"\n' "${key}" "${val}"
+    printf '%s="%s"\n' "${key}" "${val}"
   done
 )
 
