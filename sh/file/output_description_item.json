@@ -1,0 +1,7 @@
+[
+  { "name": "output_id",          "type": "SERIAL"},
+  { "name": "output_name",        "type": "TEXT"  },
+  { "name": "output_type",        "type": "TEXT"  },
+  { "name": "output_unit",        "type": "TEXT"  },
+  { "name": "output_description", "type": "TEXT"  }
+]

@@ -1,0 +1,7 @@
+[
+  { "name": "input_id",          "type": "SERIAL"},
+  { "name": "input_name",        "type": "TEXT"  },
+  { "name": "input_type",        "type": "TEXT"  },
+  { "name": "input_unit",        "type": "TEXT"  },
+  { "name": "input_description", "type": "TEXT"  }
+]
