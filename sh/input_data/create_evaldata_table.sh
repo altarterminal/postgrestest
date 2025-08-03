@@ -130,7 +130,9 @@ only_file_input_names=$(
 
 if [ -n "${only_file_input_names}" ]; then
   only_file_input_names_csv=$(printf '%s' "${only_file_input_names}" | tr '\n' ',')
-  echo "ERROR:${0##*/}: there are items that exist only on file <${only_file_input_names_csv}>" 1>&2
+
+  printf 'ERROR:%s: there are items that exist only on file <%s>\n' 1>&2
+    "${0##*/}" "${only_file_input_names_csv}"
   exit 1
 fi
 
@@ -154,7 +156,9 @@ only_file_output_names=$(
 
 if [ -n "${only_file_output_names}" ]; then
   only_file_output_names_csv=$(printf '%s' "${only_file_output_names}" | tr '\n' ',')
-  echo "ERROR:${0##*/}: there are items that exist only on file <${only_file_output_names_csv}>" 1>&2
+
+  printf 'ERROR:%s: there are items that exist only on file <%s>\n' 1>&2
+    "${0##*/}" "${only_file_output_names_csv}"
   exit 1
 fi
 
