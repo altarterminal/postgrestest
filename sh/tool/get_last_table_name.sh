@@ -80,7 +80,7 @@ table_list=$(db_refer_command '\dt '"${DEVICE_SCHEMA_NAME}.*")
 exit_code=$?
 
 if [ "${exit_code}" -ne 0 ]; then
-  echo "ERROR:${0##*/}: get talbe list failed" 1>&2
+  echo "ERROR:${0##*/}: get table list failed" 1>&2
   exit 1
 fi
 
