@@ -54,20 +54,6 @@ DEVICE_NAME="${opr_n}"
 JSON_FILE="${opr_f}"
 
 #####################################################################
-# check
-#####################################################################
-
-if ! type psql >/dev/null 2>&1; then
-  echo "ERROR:${0##*/}: psql command not found" 1>&2
-  exit 1
-fi
-
-if ! type jq >/dev/null 2>&1; then
-  echo "ERROR:${0##*/}: jq command not found" 1>&2
-  exit 1
-fi
-
-#####################################################################
 # common setting
 #####################################################################
 
@@ -85,16 +71,9 @@ fi
 # setting
 #####################################################################
 
-DB_HOST="${COMMON_DB_HOST}"
-DB_PORT="${COMMON_DB_PORT}"
-DB_NAME="${COMMON_DB_NAME}"
-
-COMMON_ITEM_JSON_FILE="${THIS_DIR}/common.json"
-
-MANAGE_TABLE_ROLE_NAME="${COMMON_MANAGE_TABLE_ROLE_NAME}"
 REFER_ROLE_NAME="${COMMON_REFER_ROLE_NAME}"
 
-SCHEMA_NAME="device_${DEVICE_NAME}_schema"
+SCHEMA_NAME="${COMMON_DEVICE_SCHEMA_PREFIX}_${DEVICE_NAME}_${COMMON_DEVICE_SCHEMA_SUFFIX}"
 
 INPUT_DESC_TABLE_NAME="${COMMON_INPUT_DESC_TABLE_NAME}"
 OUTPUT_DESC_TABLE_NAME="${COMMON_OUTPUT_DESC_TABLE_NAME}"
@@ -102,28 +81,15 @@ OUTPUT_DESC_TABLE_NAME="${COMMON_OUTPUT_DESC_TABLE_NAME}"
 ABS_INPUT_DESC_TABLE_NAME="${SCHEMA_NAME}.${INPUT_DESC_TABLE_NAME}"
 ABS_OUTPUT_DESC_TABLE_NAME="${SCHEMA_NAME}.${OUTPUT_DESC_TABLE_NAME}"
 
-TABLE_NAME_PREFIX="eval_${PROJECT_NAME}_${PROJECT_VERSION}_${DEVICE_NAME}"
+EVALDATA_TABLE_PREFIX="${COMMON_EVALDATA_TABLE_PREFIX}"
 
-#####################################################################
-# utility
-#####################################################################
+THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 
-db_manage_table_command() {
-  local COMMAND="$1"
+TOOL_DIR="${THIS_DIR}/../tool"
+GET_LAST_TABLE_NAME="${TOOL_DIR}/get_last_table_name.sh"
 
-  psql "${DB_NAME}" \
-    -U "${MANAGE_TABLE_ROLE_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" \
-    -c "${COMMAND}"
-}
-
-db_refer_command() {
-  local COMMAND="$1"
-
-  psql "${DB_NAME}" \
-    -U "${REFER_ROLE_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" \
-    -c "${COMMAND}" \
-    -t --csv
-}
+FILE_DIR="${THIS_DIR}/../file"
+COMMON_ITEM_JSON_FILE="${FILE_DIR}/common_item.json"
 
 #####################################################################
 # check json
@@ -152,8 +118,8 @@ file_input_names=$(jq -r '.in[]' "${JSON_FILE}" | sort)
 
 existing_input_names=$(
   db_refer_command \
-    "SELECT input_name FROM ${ABS_INPUT_DESC_TABLE_NAME}" |
-  grep -v '^$' | sort
+    "SELECT input_name FROM ${ABS_INPUT_DESC_TABLE_NAME}
+     ORDER BY input_name"
 )
 
 only_file_input_names=$(
@@ -176,8 +142,8 @@ file_output_names=$(jq -r '.out[]' "${JSON_FILE}" | sort)
 
 existing_output_names=$(
   db_refer_command \
-    "SELECT output_name FROM ${ABS_OUTPUT_DESC_TABLE_NAME}" |
-  grep -v '^$' | sort
+    "SELECT output_name FROM ${ABS_OUTPUT_DESC_TABLE_NAME}
+     ORDER BY output_name"
 )
 
 only_file_output_names=$(
@@ -196,13 +162,26 @@ fi
 # Get serial
 #####################################################################
 
+target_table_name=$(
+  ${GET_LAST_TABLE_NAME} \
+    "${PROJECT_NAME}" "${PROJECT_VERSION}" "${DEVICE_NAME}"
+)
+exit_code=$?
+
+if [ "${exit_code}" -ne 0 ]; then
+  echo "ERROR:${0##*/}: get table name failed" 1>&2
+  exit "${exit_code}"
+fi
+
 prev_serial_num=$(
-  db_refer_command '\dt '"${SCHEMA_NAME}.*"                         |
-  awk -F, '{ print $2; }'                                           |
-  grep "^${TABLE_NAME_PREFIX}"                                      |
+  printf '%s\n' "${target_table_name}"                              |
   sed 's!^.*_\([0-9][0-9]\)!\1!'                                    |
   sed 's!^0*!!'                                                     |
-  { cat; echo '-1'; }                                               |
+  {
+    # This is needed in case no table has not been created before
+    cat; echo '-1';
+  }                                                                 |
+  grep -v '^$'                                                      |
   sort -n                                                           |
   tail -n 1
 )
@@ -210,7 +189,8 @@ prev_serial_num=$(
 next_serial_num=$((prev_serial_num + 1))
 
 next_table_name=$(
-  printf 'eval_%s_%s_%s_%02d\n' \
+  printf '%s_%s_%s_%s_%02d\n' \
+    "${EVALDATA_TABLE_PREFIX}" \
     "${PROJECT_NAME}" "${PROJECT_VERSION}" "${DEVICE_NAME}" \
     "${next_serial_num}"
 )

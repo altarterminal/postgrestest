@@ -97,9 +97,12 @@ DB_PORT="${COMMON_DB_PORT}"
 
 REFER_ROLE_NAME="${COMMON_REFER_ROLE_NAME}"
 
-DEVICE_SCHEMA_NAME="device_${DEVICE_NAME}_schema"
+DEVICE_SCHEMA_NAME="${COMMON_DEVICE_SCHEMA_PREFIX}_${DEVICE_NAME}_${COMMON_DEVICE_SCHEMA_SUFFIX}"
 
-EVALDATA_TABLE_NAME_PREFIX="eval_${PROJECT_NAME}_${PROJECT_VERSION}_${DEVICE_NAME}"
+THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+TOOL_DIR="${THIS_DIR}/../tool"
+GET_TABLE_NAME_BY_SERIAL="${TOOL_DIR}/get_table_name_by_serial.sh"
+GET_LAST_TABLE_NAME="${TOOL_DIR}/get_last_table_name.sh"
 
 #####################################################################
 # check 
@@ -110,30 +113,28 @@ if ! type psql >/dev/null 2>&1; then
   exit 1
 fi
 
-db_refer_command() {
-  local COMMAND="$1"
-
-  psql "${DB_NAME}" \
-    -U "${REFER_ROLE_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" \
-    -c "${COMMAND}" \
-    -t --csv
-}
-
 #####################################################################
 # get last table name
 #####################################################################
 
 if [ "${SERIAL_NUM}" -ge 0 ]; then
-  format_serial_num=$(printf '%02d\n' "${SERIAL_NUM}")
-  target_table_name="${EVALDATA_TABLE_NAME_PREFIX%_}_${format_serial_num}"
+  target_table_name=$(
+    ${GET_TABLE_NAME_BY_SERIAL} \
+      "${PROJECT_NAME}" "${PROJECT_VERSION}" "${DEVICE_NAME}" \
+      "${SERIAL_NUM}"
+  )
 else
   target_table_name=$(
-    db_refer_command '\dt '"${DEVICE_SCHEMA_NAME}.*"                |
-    awk -F, '{ print $2; }'                                         |
-    grep "^${EVALDATA_TABLE_NAME_PREFIX}"                           |
-    sort                                                            |
-    tail -n 1
+    ${GET_LAST_TABLE_NAME} \
+      "${PROJECT_NAME}" "${PROJECT_VERSION}" "${DEVICE_NAME}"
   )
+fi
+
+exit_code=$?
+
+if [ "${exit_code}" -ne 0 ]; then
+  echo "ERROR:${0##*/}: get table name failed" 1>&2
+  exit "${exit_code}"
 fi
 
 abs_target_table_name="${DEVICE_SCHEMA_NAME}.${target_table_name}"
@@ -143,19 +144,31 @@ abs_target_table_name="${DEVICE_SCHEMA_NAME}.${target_table_name}"
 #####################################################################
 
 if [ "${IS_JSON}" = 'yes' ]; then
-  psql "${DB_NAME}" \
+  result=$(psql "${DB_NAME}" \
     -U "${REFER_ROLE_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" \
     -t \
     -c \
-    "SELECT to_json(${abs_target_table_name})
-     FROM ${abs_target_table_name} WHERE validity = 'TRUE'"
+    "SELECT to_json(${target_table_name})
+     FROM ${abs_target_table_name} WHERE validity = TRUE"
+  )
 elif [ "${IS_CSV}" = 'yes' ]; then
-  psql "${DB_NAME}" \
+  result=$(psql "${DB_NAME}" \
     -U "${REFER_ROLE_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" \
-    -t --csv \
-    -c "SELECT * FROM ${abs_target_table_name} WHERE validity = 'TRUE'"
+    --csv \
+    -c "SELECT * FROM ${abs_target_table_name} WHERE validity = TRUE"
+  )
 else
-  psql "${DB_NAME}" \
+  result=$(psql "${DB_NAME}" \
     -U "${REFER_ROLE_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" \
-    -c "SELECT * FROM ${abs_target_table_name} WHERE validity = 'TRUE'"
+    -c "SELECT * FROM ${abs_target_table_name} WHERE validity = TRUE"
+  )
 fi
+
+exit_code=$?
+
+if [ "${exit_code}" -ne 0 ]; then
+  echo "ERROR:${0##*/}: get data failed" 1>&2
+  exit "${exit_code}"
+fi
+
+printf '%s\n' "${result}"

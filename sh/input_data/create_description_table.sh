@@ -10,7 +10,7 @@ print_usage_and_exit () {
 Usage   : ${0##*/} <device name> <file>
 Options : 
 
-Create input table and output table.
+Create input description table and output description table.
 USAGE
   exit 1
 }
@@ -46,20 +46,6 @@ DEVICE_NAME="${opr_n}"
 JSON_FILE="${opr_f}"
 
 #####################################################################
-# check
-#####################################################################
-
-if ! type psql >/dev/null 2>&1; then
-  echo "ERROR:${0##*/}: psql command not found" 1>&2
-  exit 1
-fi
-
-if ! type jq >/dev/null 2>&1; then
-  echo "ERROR:${0##*/}: jq command not found" 1>&2
-  exit 1
-fi
-
-#####################################################################
 # common setting
 #####################################################################
 
@@ -77,50 +63,20 @@ fi
 # setting
 #####################################################################
 
-DB_HOST="${COMMON_DB_HOST}"
-DB_PORT="${COMMON_DB_PORT}"
-DB_NAME="${COMMON_DB_NAME}"
-
-MANAGE_SCHEMA_ROLE_NAME="${COMMON_MANAGE_SCHEMA_ROLE_NAME}"
-MANAGE_TABLE_ROLE_NAME="${COMMON_MANAGE_TABLE_ROLE_NAME}"
 REFER_ROLE_NAME="${COMMON_REFER_ROLE_NAME}"
 
 INPUT_DESC_TABLE_NAME="${COMMON_INPUT_DESC_TABLE_NAME}"
 OUTPUT_DESC_TABLE_NAME="${COMMON_OUTPUT_DESC_TABLE_NAME}"
 
-SCHEMA_NAME="device_${DEVICE_NAME}_schema"
+SCHEMA_NAME="${COMMON_DEVICE_SCHEMA_PREFIX}_${DEVICE_NAME}_${COMMON_DEVICE_SCHEMA_SUFFIX}"
 
 ABS_INPUT_DESC_TABLE_NAME="${SCHEMA_NAME}.${INPUT_DESC_TABLE_NAME}"
 ABS_OUTPUT_DESC_TABLE_NAME="${SCHEMA_NAME}.${OUTPUT_DESC_TABLE_NAME}"
 
-#####################################################################
-# utility
-#####################################################################
-
-db_manage_schema_command() {
-  local COMMAND="$1"
-
-  psql "${DB_NAME}" \
-    -U "${MANAGE_SCHEMA_ROLE_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" \
-    -c "${COMMAND}"
-}
-
-db_manage_table_command() {
-  local COMMAND="$1"
-
-  psql "${DB_NAME}" \
-    -U "${MANAGE_TABLE_ROLE_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" \
-    -c "${COMMAND}"
-}
-
-db_refer_command() {
-  local COMMAND="$1"
-
-  psql "${DB_NAME}" \
-    -U "${REFER_ROLE_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" \
-    -c "${COMMAND}" \
-    -t --csv
-}
+THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+FILE_DIR="${THIS_DIR}/../file"
+INPUT_DESC_ITEM_JSON_FILE="${FILE_DIR}/input_description_item.json"
+OUTPUT_DESC_ITEM_JSON_FILE="${FILE_DIR}/output_description_item.json"
 
 #####################################################################
 # check json
@@ -142,42 +98,34 @@ if [ -z "$(jq '.out // empty' "${JSON_FILE}")" ]; then
 fi
 
 #####################################################################
-# Create schema
-#####################################################################
-
-if db_refer_command '\dn' | awk -F',' '{ print $1; }' |
-   grep -q "^${SCHEMA_NAME}$"; then
-  echo "INFO:${0##*/}: schema already exists <${SCHEMA_NAME}>" 1>&2
-else
-  db_manage_schema_command "CREATE SCHEMA ${SCHEMA_NAME}"
-
-  db_manage_schema_command \
-    "GRANT USAGE ON SCHEMA ${SCHEMA_NAME}
-     TO ${MANAGE_TABLE_ROLE_NAME},${REFER_ROLE_NAME};"
-  db_manage_schema_command \
-    "GRANT CREATE ON SCHEMA ${SCHEMA_NAME}
-     TO ${MANAGE_TABLE_ROLE_NAME};"
-fi
-
-#####################################################################
-# Create input table
+# Create input description table
 #####################################################################
 
 if db_refer_command '\dt '"${SCHEMA_NAME}"'.*' 2>/dev/null |
    awk -F',' '{ print $2; }' | grep -q "^${INPUT_DESC_TABLE_NAME}$"; then
   echo "INFO:${0##*/}: table already exists <${ABS_INPUT_DESC_TABLE_NAME}>" 1>&2
 else
-  db_manage_table_command "CREATE TABLE ${ABS_INPUT_DESC_TABLE_NAME} (
-    input_id SERIAL,
-    input_name TEXT,
-    input_type TEXT,
-    input_unit TEXT,
-    input_description TEXT
-  )"
+  create_input_description_table_command=$(
+     jq -c '.[]' "${INPUT_DESC_ITEM_JSON_FILE}" |
+     while read -r line
+     do
+       input_name=$(printf '%s\n' "${line}" | jq -r '.name // empty')
+       input_type=$(printf '%s\n' "${line}" | jq -r '.type // empty')
+
+       printf '%s %s,\n' "${input_name}" "${input_type}"
+     done |
+     sed '$s!,$!!' |
+     {
+       echo "CREATE TABLE ${ABS_INPUT_DESC_TABLE_NAME} ("
+       cat
+       echo ');'
+     }
+  )
+
+  db_manage_table_command "${create_input_description_table_command}"
 
   db_manage_table_command \
-    "GRANT SELECT ON TABLE ${ABS_INPUT_DESC_TABLE_NAME}
-     TO ${REFER_ROLE_NAME};"
+    "GRANT SELECT ON TABLE ${ABS_INPUT_DESC_TABLE_NAME} TO ${REFER_ROLE_NAME};"
 fi
 
 #####################################################################
@@ -188,17 +136,27 @@ if db_refer_command '\dt '"${SCHEMA_NAME}"'.*' 2>/dev/null |
    awk -F',' '{ print $2; }' | grep -q "^${OUTPUT_DESC_TABLE_NAME}$"; then
   echo "INFO:${0##*/}: table already exists <${ABS_OUTPUT_DESC_TABLE_NAME}>" 1>&2
 else
-  db_manage_table_command "CREATE TABLE ${ABS_OUTPUT_DESC_TABLE_NAME} (
-    output_id SERIAL,
-    output_name TEXT,
-    output_type TEXT,
-    output_unit TEXT,
-    output_description TEXT
-  )"
+  create_output_description_table_command=$(
+     jq -c '.[]' "${OUTPUT_DESC_ITEM_JSON_FILE}" |
+     while read -r line
+     do
+       output_name=$(printf '%s\n' "${line}" | jq -r '.name // empty')
+       output_type=$(printf '%s\n' "${line}" | jq -r '.type // empty')
+
+       printf '%s %s,\n' "${output_name}" "${output_type}"
+     done |
+     sed '$s!,$!!' |
+     {
+       echo "CREATE TABLE ${ABS_OUTPUT_DESC_TABLE_NAME} ("
+       cat
+       echo ');'
+     }
+  )
+
+  db_manage_table_command "${create_output_description_table_command}"
 
   db_manage_table_command \
-    "GRANT SELECT ON TABLE ${ABS_OUTPUT_DESC_TABLE_NAME}
-     TO ${REFER_ROLE_NAME};"
+    "GRANT SELECT ON TABLE ${ABS_OUTPUT_DESC_TABLE_NAME} TO ${REFER_ROLE_NAME};"
 fi
 
 #####################################################################
@@ -207,8 +165,8 @@ fi
 
 old_input_names=$(
   db_refer_command \
-    "SELECT input_name FROM ${ABS_INPUT_DESC_TABLE_NAME}" |
-  grep -v '^$' | sort
+    "SELECT input_name FROM ${ABS_INPUT_DESC_TABLE_NAME}
+     ORDER BY input_name;"
 )
 
 new_input_names=$(jq -r '.in.[].name' "${JSON_FILE}" | sort)
@@ -221,7 +179,9 @@ only_old_input_names=$(
 
 if [ -n "${only_old_input_names}" ]; then
   only_old_input_names_csv=$(printf '%s' "${only_old_input_names}" | tr '\n' ',')
-  echo "ERROR:${0##*/}: there are items that exist only on existing database <${only_old_input_names_csv}>" 1>&2
+
+  printf 'ERROR:%s: there are input items that exist only on database <%s>\n' \
+    "${0##*/}" "${only_old_input_names_csv}"
   exit 1
 fi
 
@@ -238,13 +198,13 @@ do
   input_unit=$(printf '%s\n' "${line}" | jq -r ".unit // empty")
   input_description=$(printf '%s\n' "${line}" | jq -r ".description // empty")
 
-  input_command=''
-  input_command="${input_command} INSERT into ${ABS_INPUT_DESC_TABLE_NAME}"
-  input_command="${input_command} (input_name,input_type,input_unit,input_description)"
-  input_command="${input_command} VALUES"
-  input_command="${input_command} ('${input_name}','${input_type}','${input_unit}','${input_description}')"
+  input_cmd=''
+  input_cmd="${input_cmd} INSERT into ${ABS_INPUT_DESC_TABLE_NAME}"
+  input_cmd="${input_cmd} (input_name,input_type,input_unit,input_description)"
+  input_cmd="${input_cmd} VALUES"
+  input_cmd="${input_cmd} ('${input_name}','${input_type}','${input_unit}','${input_description}')"
 
-  db_manage_table_command "${input_command}" >/dev/null
+  db_manage_table_command "${input_cmd}" >/dev/null
 done
 
 #####################################################################
@@ -253,8 +213,8 @@ done
 
 old_output_names=$(
   db_refer_command \
-    "SELECT output_name FROM ${ABS_OUTPUT_DESC_TABLE_NAME}" |
-  grep -v '^$' | sort
+    "SELECT output_name FROM ${ABS_OUTPUT_DESC_TABLE_NAME}
+     ORDER BY output_name;"
 )
 
 new_output_names=$(jq -r ".out.[].name" "${JSON_FILE}" | sort)
@@ -267,7 +227,9 @@ only_old_output_names=$(
 
 if [ -n "${only_old_output_names}" ]; then
   only_old_output_names_csv=$(printf '%s' "${only_old_output_names}" | tr '\n' ',')
-  echo "ERROR:${0##*/}: there are items that exist only on existing database <${only_old_output_names_csv}>" 1>&2
+
+  printf 'ERROR:%s: there are output items that exist only on database <%s>\n' \
+    "${0##*/}" "${only_old_output_names_csv}"
   exit 1
 fi
 
@@ -284,11 +246,11 @@ do
   output_unit=$(printf '%s\n' "${line}" | jq -r ".unit // empty")
   output_description=$(printf '%s\n' "${line}" | jq -r ".description // empty")
 
-  output_command=''
-  output_command="${output_command} INSERT into ${ABS_OUTPUT_DESC_TABLE_NAME}"
-  output_command="${output_command} (output_name,output_type,output_unit,output_description)"
-  output_command="${output_command} VALUES"
-  output_command="${output_command} ('${output_name}','${output_type}','${output_unit}','${output_description}')"
+  output_cmd=''
+  output_cmd="${output_cmd} INSERT into ${ABS_OUTPUT_DESC_TABLE_NAME}"
+  output_cmd="${output_cmd} (output_name,output_type,output_unit,output_description)"
+  output_cmd="${output_cmd} VALUES"
+  output_cmd="${output_cmd} ('${output_name}','${output_type}','${output_unit}','${output_description}')"
 
-  db_manage_table_command "${output_command}" >/dev/null
+  db_manage_table_command "${output_cmd}" >/dev/null
 done

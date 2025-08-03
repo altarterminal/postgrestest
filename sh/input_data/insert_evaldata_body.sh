@@ -76,62 +76,16 @@ fi
 # setting
 #####################################################################
 
-DB_NAME="${COMMON_DB_NAME}"
-DB_HOST="${COMMON_DB_HOST}"
-DB_PORT="${COMMON_DB_PORT}"
-
-MANAGE_TABLE_ROLE_NAME="${COMMON_MANAGE_TABLE_ROLE_NAME}"
-REFER_ROLE_NAME="${COMMON_REFER_ROLE_NAME}"
-
 COMMON_SCHEMA_NAME="${COMMON_COMMON_SCHEMA_NAME}"
-DEVICE_SCHEMA_NAME="device_${DEVICE_NAME}_schema"
-
-EVALDATA_TABLE_NAME_PREFIX="eval_${PROJECT_NAME}_${PROJECT_VERSION}_${DEVICE_NAME}"
+DEVICE_SCHEMA_NAME="${COMMON_DEVICE_SCHEMA_PREFIX}_${DEVICE_NAME}_${COMMON_DEVICE_SCHEMA_SUFFIX}"
 
 ABS_IMAGE_TABLE_NAME="${COMMON_SCHEMA_NAME}.${COMMON_IMAGE_TABLE_NAME}"
 ABS_REALDEVICE_TABLE_NAME="${COMMON_SCHEMA_NAME}.${COMMON_REALDEVICE_TABLE_NAME}"
 
-ABS_INPUT_DESC_TABLE_NAME="${DEVICE_SCHEMA_NAME}.${COMMON_INPUT_DESC_TABLE_NAME}"
-ABS_OUTPUT_DESC_TABLE_NAME="${DEVICE_SCHEMA_NAME}.${COMMON_OUTPUT_DESC_TABLE_NAME}"
-
-#####################################################################
-# check 
-#####################################################################
-
-if ! type psql >/dev/null 2>&1; then
-  echo "ERROR:${0##*/}: psql command not found" 1>&2
-  exit 1
-fi
-
-if ! type jq >/dev/null 2>&1; then
-  echo "ERROR:${0##*/}: jq command not found" 1>&2
-  exit 1
-fi
-
-#####################################################################
-# utility
-#####################################################################
-
-db_manage_table_command() {
-  local COMMAND="$1"
-
-  psql "${DB_NAME}" \
-    -U "${MANAGE_TABLE_ROLE_NAME}" \
-    -h "${DB_HOST}" \
-    -p "${DB_PORT}" \
-    -c "${COMMAND}"
-}
-
-db_refer_command() {
-  local COMMAND="$1"
-
-  psql "${DB_NAME}" \
-    -U "${REFER_ROLE_NAME}" \
-    -h "${DB_HOST}" \
-    -p "${DB_PORT}" \
-    -c "${COMMAND}" \
-    -A -t -F,
-}
+THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+TOOL_DIR="${THIS_DIR}/../tool"
+GET_LAST_TABLE_NAME="${TOOL_DIR}/get_last_table_name.sh"
+GET_ITEM_NAMES="${TOOL_DIR}/get_item_names.sh"
 
 #####################################################################
 # check json
@@ -170,8 +124,9 @@ fi
 evaldata_image_md5sum=$(jq -r '."image_md5sum"' "${JSON_FILE}")
 
 image_id=$(
-  db_refer_command "SELECT image_id FROM ${ABS_IMAGE_TABLE_NAME} 
-    WHERE image_md5sum = '${evaldata_image_md5sum}'"
+  db_refer_command \
+    "SELECT image_id FROM ${ABS_IMAGE_TABLE_NAME}
+     WHERE image_md5sum = '${evaldata_image_md5sum}'"
 )
 
 if [ -z "${image_id}" ]; then
@@ -186,8 +141,9 @@ fi
 evaldata_realdevice_serial=$(jq -r '."realdevice_serial"' "${JSON_FILE}")
 
 realdevice_id=$(
-  db_refer_command "SELECT realdevice_id FROM ${ABS_REALDEVICE_TABLE_NAME}
-    WHERE realdevice_serial = '${evaldata_realdevice_serial}'"
+  db_refer_command \
+    "SELECT realdevice_id FROM ${ABS_REALDEVICE_TABLE_NAME}
+     WHERE realdevice_serial = '${evaldata_realdevice_serial}'"
 )
 
 if [ -z "${realdevice_id}" ]; then
@@ -200,12 +156,15 @@ fi
 #####################################################################
 
 target_table_name=$(
-  db_refer_command '\dt '"${DEVICE_SCHEMA_NAME}.*"                  |
-  awk -F, '{ print $2; }'                                           |
-  grep "^${EVALDATA_TABLE_NAME_PREFIX}"                             |
-  sort                                                              |
-  tail -n 1
+  ${GET_LAST_TABLE_NAME} \
+    "${PROJECT_NAME}" "${PROJECT_VERSION}" "${DEVICE_NAME}"
 )
+exit_code=$?
+
+if [ "${exit_code}" -ne 0 ]; then
+  echo "ERROR:${0##*/}: get table name failed" 1>&2
+  exit "${exit_code}"
+fi
 
 abs_target_table_name="${DEVICE_SCHEMA_NAME}.${target_table_name}"
 
@@ -213,35 +172,27 @@ abs_target_table_name="${DEVICE_SCHEMA_NAME}.${target_table_name}"
 # check the consistency
 #####################################################################
 
-candidate_input_names=$(
-  db_refer_command "SELECT input_name FROM 
-    ${ABS_INPUT_DESC_TABLE_NAME}" |
-  grep -v '^$' | sort
-)
-candidate_output_names=$(
-  db_refer_command "SELECT output_name FROM 
-    ${ABS_OUTPUT_DESC_TABLE_NAME}" |
-  grep -v '^$' | sort
-)
-
-table_column_names=$(
-  db_refer_command "SELECT column_name 
-    FROM information_schema.columns
-    WHERE table_name = '${target_table_name}'" |
-  grep -v '^$' | sort
-)
-
 target_input_names=$(
-  join -1 1 -2 1 -o1.1 \
-    <(printf '%s\n' "${candidate_input_names}") \
-    <(printf '%s\n' "${table_column_names}") 
+  ${GET_ITEM_NAMES} -i \
+    "${PROJECT_NAME}" "${PROJECT_VERSION}" "${DEVICE_NAME}"
 )
+exit_code=$?
+
+if [ "${exit_code}" -ne 0 ]; then
+  echo "ERROR:${0##*/}: get input item names failed" 1>&2
+  exit "${exit_code}"
+fi
 
 target_output_names=$(
-  join -1 1 -2 1 -o1.1 \
-    <(printf '%s\n' "${candidate_output_names}") \
-    <(printf '%s\n' "${table_column_names}") 
+  ${GET_ITEM_NAMES} -o \
+    "${PROJECT_NAME}" "${PROJECT_VERSION}" "${DEVICE_NAME}"
 )
+exit_code=$?
+
+if [ "${exit_code}" -ne 0 ]; then
+  echo "ERROR:${0##*/}: get output item names failed" 1>&2
+  exit "${exit_code}"
+fi
 
 evaldata_input_names=$(jq -r '.in | keys | .[]' "${JSON_FILE}" | sort)
 
@@ -301,23 +252,23 @@ jq -s | jq 'sort_by(.key)' | jq -c '.[]'
 )
 
 key_tuple=$(
-printf '%s\n' "${insert_key_value_pairs}" |
-while read -r line
-do
-  key=$(printf '%s\n' "${line}" | jq -r '.key')
-  printf "%s," "${key}"
-done |
-sed 's!,$!!'
+  printf '%s\n' "${insert_key_value_pairs}" |
+  while read -r line
+  do
+    key=$(printf '%s\n' "${line}" | jq -r '.key')
+    printf "%s," "${key}"
+  done |
+  sed 's!,$!!'
 )
 
 val_tuple=$(
-printf '%s\n' "${insert_key_value_pairs}" |
-while read -r line
-do
-  val=$(printf '%s\n' "${line}" | jq -r '.value')
-  printf "'%s'," "${val}"
-done |
-sed 's!,$!!'
+  printf '%s\n' "${insert_key_value_pairs}" |
+  while read -r line
+  do
+    val=$(printf '%s\n' "${line}" | jq -r '.value')
+    printf "'%s'," "${val}"
+  done |
+  sed 's!,$!!'
 )
 
 insert_command=''

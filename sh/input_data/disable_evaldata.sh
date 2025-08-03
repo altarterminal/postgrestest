@@ -90,55 +90,14 @@ DB_NAME="${COMMON_DB_NAME}"
 DB_HOST="${COMMON_DB_HOST}"
 DB_PORT="${COMMON_DB_PORT}"
 
-MANAGE_TABLE_ROLE_NAME="${COMMON_MANAGE_TABLE_ROLE_NAME}"
 REFER_ROLE_NAME="${COMMON_REFER_ROLE_NAME}"
 
-DEVICE_SCHEMA_NAME="device_${DEVICE_NAME}_schema"
+SCHEMA_NAME="${COMMON_DEVICE_SCHEMA_PREFIX}_${DEVICE_NAME}_${COMMON_DEVICE_SCHEMA_SUFFIX}"
 
-EVALDATA_TABLE_NAME_PREFIX="eval_${PROJECT_NAME}_${PROJECT_VERSION}_${DEVICE_NAME}"
-
-#####################################################################
-# check 
-#####################################################################
-
-if ! type psql >/dev/null 2>&1; then
-  echo "ERROR:${0##*/}: psql command not found" 1>&2
-  exit 1
-fi
-
-if ! type jq >/dev/null 2>&1; then
-  echo "ERROR:${0##*/}: jq command not found" 1>&2
-  exit 1
-fi
-
-#####################################################################
-# utility
-#####################################################################
-
-db_manage_table_command() {
-  local COMMAND="$1"
-
-  psql "${DB_NAME}" \
-    -U "${MANAGE_TABLE_ROLE_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" \
-    -c "${COMMAND}"
-}
-
-db_refer_command() {
-  local COMMAND="$1"
-
-  psql "${DB_NAME}" \
-    -U "${REFER_ROLE_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" \
-    -c "${COMMAND}" \
-    -t --csv
-}
-
-db_refer_command_raw() {
-  local COMMAND="$1"
-
-  psql "${DB_NAME}" \
-    -U "${REFER_ROLE_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" \
-    -c "${COMMAND}"
-}
+THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+TOOL_DIR="${THIS_DIR}/../tool"
+GET_TABLE_NAME_BY_SERIAL="${TOOL_DIR}/get_table_name_by_serial.sh"
+GET_LAST_TABLE_NAME="${TOOL_DIR}/get_last_table_name.sh"
 
 #####################################################################
 # check reason
@@ -171,16 +130,23 @@ decomposed_ids=$(
 #####################################################################
 
 if [ "${SERIAL_NUM}" -ge 0 ]; then
-  format_serial_num=$(printf '%02d\n' "${SERIAL_NUM}")
-  target_table_name="${EVALDATA_TABLE_NAME_PREFIX%_}_${format_serial_num}"
+  target_table_name=$(
+    ${GET_TABLE_NAME_BY_SERIAL} \
+      "${PROJECT_NAME}" "${PROJECT_VERSION}" "${DEVICE_NAME}" \
+      "${SERIAL_NUM}"
+  )
 else
   target_table_name=$(
-    db_refer_command '\dt '"${DEVICE_SCHEMA_NAME}.*"                |
-    awk -F, '{ print $2; }'                                         |
-    grep "^${EVALDATA_TABLE_NAME_PREFIX}"                           |
-    sort                                                            |
-    tail -n 1
+    ${GET_LAST_TABLE_NAME} \
+      "${PROJECT_NAME}" "${PROJECT_VERSION}" "${DEVICE_NAME}"
   )
+fi
+
+exit_code=$?
+
+if [ "${exit_code}" -ne 0 ]; then
+  echo "ERROR:${0##*/}: get table name failed" 1>&2
+  exit "${exit_code}"
 fi
 
 abs_target_table_name="${DEVICE_SCHEMA_NAME}.${target_table_name}"
@@ -196,9 +162,10 @@ comma_quote_ids=$(
 )
 
 target_content=$(
-  db_refer_command_raw \
-    "SELECT * FROM ${abs_target_table_name} 
-     WHERE measure_id IN (${comma_quote_ids});"
+  db_refer_command_default "
+     SELECT * FROM ${abs_target_table_name}
+     WHERE measure_id IN (${comma_quote_ids});
+  "
 )
 
 #####################################################################
@@ -223,7 +190,7 @@ fi
 #####################################################################
 
 db_manage_table_command "
-  UPDATE ${abs_target_table_name} 
+  UPDATE ${abs_target_table_name}
   SET (validity, free_description) = ('FALSE', '${DISABLE_REASON}')
-  A
-  WHERE measure_id IN (${comma_quote_ids});"
+  WHERE measure_id IN (${comma_quote_ids});
+"
