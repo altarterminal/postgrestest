@@ -2,14 +2,14 @@
 - name: Create image table
   community.postgresql.postgresql_table:
     name: "{{ common_schema_name }}.{{ image_table_name }}"
-    columns:
-      - image_id     SERIAL
-      - image_name   TEXT
-      - image_md5sum VARCHAR(32)
+    columns: "{{ image_items }}"
     login_host: "{{ db_host }}"
     port: "{{ db_port }}"
     login_db: "{{ db_name }}"
     login_user: "{{ manage_table_role_name }}"
+  vars:
+    query_string: "[*].join(' ', [name, type])"
+    image_items: "{{ lookup('file', image_item_file) | from_json | json_query(query_string) }}"
 
 - name: Grant to read image table
   community.postgresql.postgresql_privs:
@@ -29,9 +29,11 @@
     query: |
       INSERT INTO {{ common_schema_name }}.{{ image_table_name }}
       ( image_name, image_md5sum ) VALUES
-      ( '{{ item.name }}', '{{ item.md5sum }}' )
+      ( '{{ item.image_name }}', '{{ item.image_md5sum }}' )
     login_host: "{{ db_host }}"
     port: "{{ db_port }}"
     login_db: "{{ db_name }}"
     login_user: "{{ manage_table_role_name }}"
   loop: "{{ image_list }}"
+  vars:
+    image_list: "{{ lookup('file', image_list_file) | from_json }}"

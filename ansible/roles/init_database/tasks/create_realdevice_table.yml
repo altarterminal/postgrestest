@@ -2,15 +2,14 @@
 - name: Create realdevice table
   community.postgresql.postgresql_table:
     name: "{{ common_schema_name }}.{{ realdevice_table_name }}"
-    columns:
-      - realdevice_id     SERIAL
-      - realdevice_model  VARCHAR(32)
-      - realdevice_rev    VARCHAR(32)
-      - realdevice_serial VARCHAR(8)
+    columns: "{{ realdevice_items }}"
     login_host: "{{ db_host }}"
     port: "{{ db_port }}"
     login_db: "{{ db_name }}"
     login_user: "{{ manage_table_role_name }}"
+  vars:
+    query_string: "[*].join(' ', [name, type])"
+    realdevice_items: "{{ lookup('file', realdevice_item_file) | from_json | json_query(query_string) }}"
 
 - name: Grant to read realdevice table
   community.postgresql.postgresql_privs:
@@ -30,9 +29,11 @@
     query: |
       INSERT INTO {{ common_schema_name }}.{{ realdevice_table_name }}
       ( realdevice_model, realdevice_rev, realdevice_serial ) VALUES
-      ( '{{ item.model }}', '{{ item.rev }}', '{{ item.serial }}' )
+      ( '{{ item.realdevice_model }}', '{{ item.realdevice_rev }}', '{{ item.realdevice_serial }}' )
     login_host: "{{ db_host }}"
     port: "{{ db_port }}"
     login_db: "{{ db_name }}"
     login_user: "{{ manage_table_role_name }}"
   loop: "{{ realdevice_list }}"
+  vars:
+    realdevice_list: "{{ lookup('file', realdevice_list_file) | from_json }}"

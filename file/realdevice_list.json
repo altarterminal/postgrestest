@@ -1,4 +1,4 @@
 [
-  { "model": "model_001", "rev":"A", "serial": "abcd1234" },
-  { "model": "model_002", "rev":"C", "serial": "bcde2345" }
+  { "realdevice_model": "model_001", "realdevice_rev":"A", "realdevice_serial": "abcd1234" },
+  { "realdevice_model": "model_002", "realdevice_rev":"C", "realdevice_serial": "bcde2345" }
 ]
