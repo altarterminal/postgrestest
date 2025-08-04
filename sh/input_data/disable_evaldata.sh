@@ -172,9 +172,9 @@ target_content=$(
 # ask for user's confirmation
 #####################################################################
 
-echo '~~~ Target rows are From here'
+echo '~~~ Target Rows are from here'
 printf '%s\n' "${target_content}"
-echo '~~~ Target rows are To here'
+echo '~~~ Target Rows are to here'
 echo ''
 printf '%s' 'Target rows are above. Do you want to disable them? [Y/n] '
 

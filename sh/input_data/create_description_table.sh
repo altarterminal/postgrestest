@@ -102,7 +102,8 @@ fi
 #####################################################################
 
 if db_refer_command '\dt '"${SCHEMA_NAME}"'.*' 2>/dev/null |
-   awk -F',' '{ print $2; }' | grep -q "^${INPUT_DESC_TABLE_NAME}$"; then
+   awk -F',' '{ print $2; }' | grep -q "^${INPUT_DESC_TABLE_NAME}$"
+then
   echo "INFO:${0##*/}: table already exists <${ABS_INPUT_DESC_TABLE_NAME}>" 1>&2
 else
   create_input_description_table_command=$(
@@ -133,7 +134,8 @@ fi
 #####################################################################
 
 if db_refer_command '\dt '"${SCHEMA_NAME}"'.*' 2>/dev/null |
-   awk -F',' '{ print $2; }' | grep -q "^${OUTPUT_DESC_TABLE_NAME}$"; then
+   awk -F',' '{ print $2; }' | grep -q "^${OUTPUT_DESC_TABLE_NAME}$"
+then
   echo "INFO:${0##*/}: table already exists <${ABS_OUTPUT_DESC_TABLE_NAME}>" 1>&2
 else
   create_output_description_table_command=$(
@@ -181,7 +183,7 @@ if [ -n "${only_old_input_names}" ]; then
   only_old_input_names_csv=$(printf '%s' "${only_old_input_names}" | tr '\n' ',')
 
   printf 'ERROR:%s: there are input items that exist only on database <%s>\n' \
-    "${0##*/}" "${only_old_input_names_csv}"
+    "${0##*/}" "${only_old_input_names_csv}" 1>&2
   exit 1
 fi
 
@@ -229,7 +231,7 @@ if [ -n "${only_old_output_names}" ]; then
   only_old_output_names_csv=$(printf '%s' "${only_old_output_names}" | tr '\n' ',')
 
   printf 'ERROR:%s: there are output items that exist only on database <%s>\n' \
-    "${0##*/}" "${only_old_output_names_csv}"
+    "${0##*/}" "${only_old_output_names_csv}" 1>&2
   exit 1
 fi
 

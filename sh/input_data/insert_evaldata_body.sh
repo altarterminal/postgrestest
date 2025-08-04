@@ -283,7 +283,10 @@ insert_command="${insert_command} (${val_tuple})"
 #####################################################################
 
 if [ "${IS_DRYRUN}" = 'yes' ]; then
+  printf 'You can insert the data into <%s>.\n' "${abs_target_table_name}"
+  echo '~~~ Insert Command from here'
   printf '%s\n' "${insert_command}"
+  echo '~~~ Insert Command to here'
 else
   db_manage_table_command "${insert_command}"
 fi

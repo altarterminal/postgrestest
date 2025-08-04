@@ -8,9 +8,10 @@ set -u
 print_usage_and_exit () {
   cat <<-USAGE 1>&2
 Usage   : ${0##*/} <project name> <project version> <device name> <file>
-Options : 
+Options : -d
 
 Create an evaluation data table.
+-d: Enable dry-run (only judge whether you can create the table).
 USAGE
   exit 1
 }
@@ -23,12 +24,14 @@ opr_p=''
 opr_v=''
 opr_n=''
 opr_f=''
+opt_d='no'
 
 i=1
 for arg in ${1+"$@"}
 do
   case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
+    -d)                  opt_d='yes'          ;;
     *)
       if   [ $((i+3)) -eq $# ] && [ -z "${opr_p}" ]; then
         opr_p="${arg}"
@@ -52,6 +55,8 @@ PROJECT_NAME="${opr_p}"
 PROJECT_VERSION="${opr_v}"
 DEVICE_NAME="${opr_n}"
 JSON_FILE="${opr_f}"
+
+IS_DRYRUN="${opt_d}"
 
 #####################################################################
 # common setting
@@ -131,8 +136,8 @@ only_file_input_names=$(
 if [ -n "${only_file_input_names}" ]; then
   only_file_input_names_csv=$(printf '%s' "${only_file_input_names}" | tr '\n' ',')
 
-  printf 'ERROR:%s: there are items that exist only on file <%s>\n' 1>&2
-    "${0##*/}" "${only_file_input_names_csv}"
+  printf 'ERROR:%s: there are items that exist only on file <%s>\n' \
+    "${0##*/}" "${only_file_input_names_csv}" 1>&2
   exit 1
 fi
 
@@ -157,8 +162,8 @@ only_file_output_names=$(
 if [ -n "${only_file_output_names}" ]; then
   only_file_output_names_csv=$(printf '%s' "${only_file_output_names}" | tr '\n' ',')
 
-  printf 'ERROR:%s: there are items that exist only on file <%s>\n' 1>&2
-    "${0##*/}" "${only_file_output_names_csv}"
+  printf 'ERROR:%s: there are items that exist only on file <%s>\n' \
+    "${0##*/}" "${only_file_output_names_csv}" 1>&2
   exit 1
 fi
 
@@ -254,9 +259,16 @@ sed '$s!,$!!'                                                       |
 # Create table
 #####################################################################
 
-db_manage_table_command "${make_table_command}"
+if [ "${IS_DRYRUN}" = 'yes' ]; then
+  printf 'You can create the table <%s>.\n' "${abs_next_table_name}"
+  echo '~~~ Create Command from here'
+  printf '%s\n' "${make_table_command}"
+  echo '~~~ Create Command to here'
+else
+  db_manage_table_command "${make_table_command}"
 
-db_manage_table_command \
-  "GRANT SELECT ON TABLE ${abs_next_table_name} TO ${REFER_ROLE_NAME};"
+  db_manage_table_command \
+    "GRANT SELECT ON TABLE ${abs_next_table_name} TO ${REFER_ROLE_NAME};"
 
-printf '%s\n' "${abs_next_table_name}"
+  printf '%s\n' "${abs_next_table_name}"
+fi
