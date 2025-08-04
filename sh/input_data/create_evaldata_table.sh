@@ -11,6 +11,7 @@ Usage   : ${0##*/} <project name> <project version> <device name> <file>
 Options : -d
 
 Create an evaluation data table.
+
 -d: Enable dry-run (only judge whether you can create the table).
 USAGE
   exit 1

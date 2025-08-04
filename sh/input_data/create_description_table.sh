@@ -8,9 +8,11 @@ set -u
 print_usage_and_exit () {
   cat <<-USAGE 1>&2
 Usage   : ${0##*/} <device name> <file>
-Options : 
+Options : -d
 
 Create input description table and output description table.
+
+-d: Enable dry-run (only judge whether you can create the tables).
 USAGE
   exit 1
 }
@@ -21,12 +23,14 @@ USAGE
 
 opr_n=''
 opr_f=''
+opt_d='no'
 
 i=1
 for arg in ${1+"$@"}
 do
   case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
+    -d)                  opt_d='yes'          ;;
     *)
       if   [ $((i+1)) -eq $# ] && [ -z "${opr_n}" ]; then
         opr_n="${arg}"
@@ -44,6 +48,8 @@ done
 
 DEVICE_NAME="${opr_n}"
 JSON_FILE="${opr_f}"
+
+IS_DRYRUN="${opt_d}"
 
 #####################################################################
 # common setting
@@ -187,27 +193,39 @@ if [ -n "${only_old_input_names}" ]; then
   exit 1
 fi
 
-db_manage_table_command \
-  "DELETE FROM ${ABS_INPUT_DESC_TABLE_NAME};" >/dev/null
-db_manage_table_command \
-  "SELECT SETVAL ('${ABS_INPUT_DESC_TABLE_NAME}_input_id_seq', 1, false);" >/dev/null
+insert_input_command=$(
+  jq '.in[]' -c "${JSON_FILE}" |
+  while read -r line
+  do
+    input_name=$(printf '%s\n' "${line}" | jq -r ".name // empty")
+    input_type=$(printf '%s\n' "${line}" | jq -r ".type // empty")
+    input_unit=$(printf '%s\n' "${line}" | jq -r ".unit // empty")
+    input_description=$(printf '%s\n' "${line}" | jq -r ".description // empty")
 
-jq '.in[]' -c "${JSON_FILE}" |
-while read -r line
-do
-  input_name=$(printf '%s\n' "${line}" | jq -r ".name // empty")
-  input_type=$(printf '%s\n' "${line}" | jq -r ".type // empty")
-  input_unit=$(printf '%s\n' "${line}" | jq -r ".unit // empty")
-  input_description=$(printf '%s\n' "${line}" | jq -r ".description // empty")
+    printf "('%s','%s','%s','%s'),"'\n' \
+      "${input_name}" "${input_type}" "${input_unit}" "${input_description}"
+  done |
+  sed '$s!,$!;!' |
+  {
+    echo "INSERT into ${ABS_INPUT_DESC_TABLE_NAME}"
+    echo '(input_name, input_type, input_unit, input_description)'
+    echo 'VALUES'
+    cat
+  }
+)
 
-  input_cmd=''
-  input_cmd="${input_cmd} INSERT into ${ABS_INPUT_DESC_TABLE_NAME}"
-  input_cmd="${input_cmd} (input_name,input_type,input_unit,input_description)"
-  input_cmd="${input_cmd} VALUES"
-  input_cmd="${input_cmd} ('${input_name}','${input_type}','${input_unit}','${input_description}')"
-
-  db_manage_table_command "${input_cmd}" >/dev/null
-done
+if [ "${IS_DRYRUN}" = 'yes' ]; then
+  printf 'You can insert the table <%s>.\n' "${ABS_INPUT_DESC_TABLE_NAME}"
+  echo '~~~ Insert Command from here'
+  printf '%s\n' "${insert_input_command}"
+  echo '~~~ Insert Command to here'
+else
+  db_manage_table_command \
+    "DELETE FROM ${ABS_INPUT_DESC_TABLE_NAME};" >/dev/null
+  db_manage_table_command \
+    "SELECT SETVAL ('${ABS_INPUT_DESC_TABLE_NAME}_input_id_seq', 1, false);" >/dev/null
+  db_manage_table_command "${insert_input_command}" >/dev/null
+fi
 
 #####################################################################
 # Insert output table
@@ -235,24 +253,36 @@ if [ -n "${only_old_output_names}" ]; then
   exit 1
 fi
 
-db_manage_table_command \
-  "DELETE FROM ${ABS_OUTPUT_DESC_TABLE_NAME};" >/dev/null
-db_manage_table_command \
-  "SELECT SETVAL ('${ABS_OUTPUT_DESC_TABLE_NAME}_output_id_seq', 1, false);" >/dev/null
+insert_output_command=$(
+  jq '.out[]' -c "${JSON_FILE}" |
+  while read -r line
+  do
+    output_name=$(printf '%s\n' "${line}" | jq -r ".name // empty")
+    output_type=$(printf '%s\n' "${line}" | jq -r ".type // empty")
+    output_unit=$(printf '%s\n' "${line}" | jq -r ".unit // empty")
+    output_description=$(printf '%s\n' "${line}" | jq -r ".description // empty")
 
-jq '.out[]' -c "${JSON_FILE}" |
-while read -r line
-do
-  output_name=$(printf '%s\n' "${line}" | jq -r ".name // empty")
-  output_type=$(printf '%s\n' "${line}" | jq -r ".type // empty")
-  output_unit=$(printf '%s\n' "${line}" | jq -r ".unit // empty")
-  output_description=$(printf '%s\n' "${line}" | jq -r ".description // empty")
+    printf "('%s','%s','%s','%s'),"'\n' \
+      "${output_name}" "${output_type}" "${output_unit}" "${output_description}"
+  done |
+  sed '$s!,$!;!' |
+  {
+    echo "INSERT into ${ABS_OUTPUT_DESC_TABLE_NAME}"
+    echo '(output_name, output_type, output_unit, output_description)'
+    echo 'VALUES'
+    cat
+  }
+)
 
-  output_cmd=''
-  output_cmd="${output_cmd} INSERT into ${ABS_OUTPUT_DESC_TABLE_NAME}"
-  output_cmd="${output_cmd} (output_name,output_type,output_unit,output_description)"
-  output_cmd="${output_cmd} VALUES"
-  output_cmd="${output_cmd} ('${output_name}','${output_type}','${output_unit}','${output_description}')"
-
-  db_manage_table_command "${output_cmd}" >/dev/null
-done
+if [ "${IS_DRYRUN}" = 'yes' ]; then
+  printf 'You can insert the table <%s>.\n' "${ABS_OUTPUT_DESC_TABLE_NAME}"
+  echo '~~~ Insert Command from here'
+  printf '%s\n' "${insert_output_command}"
+  echo '~~~ Insert Command to here'
+else
+  db_manage_table_command \
+    "DELETE FROM ${ABS_OUTPUT_DESC_TABLE_NAME};" >/dev/null
+  db_manage_table_command \
+    "SELECT SETVAL ('${ABS_OUTPUT_DESC_TABLE_NAME}_output_id_seq', 1, false);" >/dev/null
+  db_manage_table_command "${insert_output_command}" >/dev/null
+fi
