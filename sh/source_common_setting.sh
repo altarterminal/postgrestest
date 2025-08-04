@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #####################################################################
-# setting 
+# setting
 #####################################################################
 
 THIS_FILE="$(realpath "${BASH_SOURCE[0]}")"
@@ -16,16 +16,21 @@ SETTING_FILE="${TOP_DIR}/common_setting.json"
 
 if ! type jq >/dev/null 2>&1; then
   echo "ERROR:${0##*/}: jq command not found" 1>&2
-  exit 1 
+  exit 1
+fi
+
+if ! type psql >/dev/null 2>&1; then
+  echo "ERROR:${0##*/}: psql command not found" 1>&2
+  exit 1
 fi
 
 if [ ! -f "${SETTING_FILE}" ]; then
   echo "ERROR:${0##*/}: setting file not found <${SETTING_FILE}" 1>&2
-  exit 1 
+  exit 1
 fi
 
 #####################################################################
-# set
+# parameter
 #####################################################################
 
 export_command=$(
@@ -40,3 +45,62 @@ export_command=$(
 )
 
 eval "${export_command}"
+
+#####################################################################
+# utility function
+#####################################################################
+
+db_check_param_definition() {
+  if \
+    [ -z "${COMMON_DB_NAME:-}" ] ||
+    [ -z "${COMMON_DB_HOST:-}" ] ||
+    [ -z "${COMMON_DB_PORT:-}" ] ||
+    [ -z "${COMMON_MANAGE_SCHEMA_ROLE_NAME:-}" ] ||
+    [ -z "${COMMON_MANAGE_TABLE_ROLE_NAME:-}" ] ||
+    [ -z "${COMMON_REFER_ROLE_NAME:-}" ]
+  then
+    echo "ERROR:${0##*/}: some required variables not defined" 1>&2
+    exit 1
+  fi
+}
+
+db_manage_schema_command() {
+  local COMMAND="$1"
+
+  psql "${COMMON_DB_NAME}" \
+    -U "${COMMON_MANAGE_SCHEMA_ROLE_NAME}" \
+    -h "${COMMON_DB_HOST}" \
+    -p "${COMMON_DB_PORT}" \
+    -c "${COMMAND}"
+}
+
+db_manage_table_command() {
+  local COMMAND="$1"
+
+  psql "${COMMON_DB_NAME}" \
+    -U "${COMMON_MANAGE_TABLE_ROLE_NAME}" \
+    -h "${COMMON_DB_HOST}" \
+    -p "${COMMON_DB_PORT}" \
+    -c "${COMMAND}"
+}
+
+db_refer_command() {
+  local COMMAND="$1"
+
+  psql "${COMMON_DB_NAME}" \
+    -U "${COMMON_REFER_ROLE_NAME}" \
+    -h "${COMMON_DB_HOST}" \
+    -p "${COMMON_DB_PORT}" \
+    -c "${COMMAND}" \
+    -t --csv
+}
+
+db_refer_command_default() {
+  local COMMAND="$1"
+
+  psql "${COMMON_DB_NAME}" \
+    -U "${COMMON_REFER_ROLE_NAME}" \
+    -h "${COMMON_DB_HOST}" \
+    -p "${COMMON_DB_PORT}" \
+    -c "${COMMAND}"
+}

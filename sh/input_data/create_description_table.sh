@@ -74,9 +74,9 @@ ABS_INPUT_DESC_TABLE_NAME="${SCHEMA_NAME}.${INPUT_DESC_TABLE_NAME}"
 ABS_OUTPUT_DESC_TABLE_NAME="${SCHEMA_NAME}.${OUTPUT_DESC_TABLE_NAME}"
 
 THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
-FILE_DIR="${THIS_DIR}/../file"
-INPUT_DESC_ITEM_JSON_FILE="${FILE_DIR}/input_description_item.json"
-OUTPUT_DESC_ITEM_JSON_FILE="${FILE_DIR}/output_description_item.json"
+PROJ_DIR="${THIS_DIR}/../.."
+INPUT_DESC_ITEM_JSON_FILE="${PROJ_DIR}/${COMMON_INPUT_DESC_ITEM_JSON_FILE}"
+OUTPUT_DESC_ITEM_JSON_FILE="${PROJ_DIR}/${COMMON_OUTPUT_DESC_ITEM_JSON_FILE}"
 
 #####################################################################
 # check json

@@ -88,8 +88,8 @@ THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 TOOL_DIR="${THIS_DIR}/../tool"
 GET_LAST_TABLE_NAME="${TOOL_DIR}/get_last_table_name.sh"
 
-FILE_DIR="${THIS_DIR}/../file"
-COMMON_ITEM_JSON_FILE="${FILE_DIR}/common_item.json"
+PROJ_DIR="${THIS_DIR}/../.."
+COMMON_ITEM_JSON_FILE="${PROJ_DIR}/${COMMON_COMMON_ITEM_JSON_FILE}"
 
 #####################################################################
 # check json
