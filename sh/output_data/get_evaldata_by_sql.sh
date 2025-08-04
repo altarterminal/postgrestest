@@ -8,9 +8,11 @@ set -u
 print_usage_and_exit () {
   cat <<-USAGE 1>&2
 Usage   : ${0##*/} <SQL statement>
-Options : 
+Options : -c
 
 Get evaluation data with SQL.
+
+-c: Enable output in form of CSV.
 USAGE
   exit 1
 }

@@ -26,8 +26,8 @@ USAGE
 opr_p=''
 opr_v=''
 opr_n=''
-opt_j='no'
 opt_c='no'
+opt_j='no'
 opt_s='-1'
 
 i=1
@@ -35,8 +35,8 @@ for arg in ${1+"$@"}
 do
   case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
-    -j)                  opt_j='yes'          ;;
     -c)                  opt_c='yes'          ;;
+    -j)                  opt_j='yes'          ;;
     -s*)                 opt_s="${arg#-s}"    ;;
     *)
       if   [ $((i+2)) -eq $# ] && [ -z "${opr_p}" ]; then
@@ -69,8 +69,8 @@ PROJECT_NAME="${opr_p}"
 PROJECT_VERSION="${opr_v}"
 DEVICE_NAME="${opr_n}"
 
-IS_JSON="${opt_j}"
 IS_CSV="${opt_c}"
+IS_JSON="${opt_j}"
 SERIAL_NUM="${opt_s}"
 
 #####################################################################
