@@ -1,22 +1,36 @@
 {
-  "COMMON_DB_HOST": "192.168.1.1",
+  "COMMON_DB_HOST": "192.168.11.13",
   "COMMON_DB_PORT": "55432",
 
   "COMMON_BARE_SSH_PORT": "22",
   "COMMON_VIRT_SSH_PORT": "50022",
 
+  "COMMON_PROXY": "",
+
   "COMMON_DB_NAME": "eval_database",
 
   "COMMON_COMMON_SCHEMA_NAME": "common_schema",
+
+  "COMMON_DEVICE_SCHEMA_PREFIX": "virtio",
+  "COMMON_DEVICE_SCHEMA_SUFFIX": "schema",
 
   "COMMON_ADMIN_ROLE_NAME":         "admin_role",
   "COMMON_MANAGE_SCHEMA_ROLE_NAME": "manage_schema_role",
   "COMMON_MANAGE_TABLE_ROLE_NAME":  "manage_table_role",
   "COMMON_REFER_ROLE_NAME":         "refer_role",
 
-  "COMMON_IMAGE_TABLE_NAME":      "image_table",
-  "COMMON_REALDEVICE_TABLE_NAME": "realdevice_table",
+  "COMMON_IMAGE_TABLE_NAME":        "image_table",
+  "COMMON_REALDEVICE_TABLE_NAME":   "realdevice_table",
+  "COMMON_ENV_TEMPLATE_TABLE_NAME": "env_template_table",
+  "COMMON_INPUT_DESC_TABLE_NAME":   "input_description_table",
+  "COMMON_OUTPUT_DESC_TABLE_NAME":  "output_description_table",
 
-  "COMMON_INPUT_DESC_TABLE_NAME":  "input_description_table",
-  "COMMON_OUTPUT_DESC_TABLE_NAME": "output_description_table"
+  "COMMON_EVALDATA_TABLE_PREFIX": "eval",
+
+  "COMMON_COMMON_ITEM_JSON_FILE":       "file/common_item.json",
+  "COMMON_IMAGE_ITEM_JSON_FILE":        "file/image_item.json",
+  "COMMON_REALDEVICE_ITEM_JSON_FILE":   "file/realdevice_item.json",
+  "COMMON_ENV_TEMPLATE_ITEM_JSON_FILE": "file/env_template_item.json",
+  "COMMON_INPUT_DESC_ITEM_JSON_FILE":   "file/input_description_item.json",
+  "COMMON_OUTPUT_DESC_ITEM_JSON_FILE":  "file/output_description_item.json"
 }

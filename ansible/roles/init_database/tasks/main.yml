@@ -31,6 +31,10 @@
   ansible.builtin.import_tasks: ./create_image_table.yml
   tags: create_image_table
 
-- name: Import realdevice table
+- name: Import create realdevice table
   ansible.builtin.import_tasks: ./create_realdevice_table.yml
   tags: create_realdevice_table
+
+- name: Import create env template table
+  ansible.builtin.import_tasks: ./create_env_template_table.yml
+  tags: create_env_template_table

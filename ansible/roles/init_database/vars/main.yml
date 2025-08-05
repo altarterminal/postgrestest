@@ -13,6 +13,8 @@ image_list_file: "{{ project_dir }}/file/image_list.json"
 realdevice_item_file: "{{  project_dir }}/file/realdevice_item.json"
 realdevice_list_file: "{{  project_dir }}/file/realdevice_list.json"
 
+env_template_item_file: "{{  project_dir }}/file/env_template_item.json"
+
 db_name: "{{ common_setting.COMMON_DB_NAME }}"
 
 common_schema_name: "{{ common_setting.COMMON_COMMON_SCHEMA_NAME }}"
@@ -26,6 +28,8 @@ normal_role_names: "{{ manage_schema_role_name }},{{ manage_table_role_name }},{
 
 image_table_name:      "{{ common_setting.COMMON_IMAGE_TABLE_NAME }}"
 realdevice_table_name: "{{ common_setting.COMMON_REALDEVICE_TABLE_NAME }}"
+
+env_template_table_name: "{{ common_setting.COMMON_ENV_TEMPLATE_TABLE_NAME }}"
 
 input_description_table_name:  "{{ common_setting.COMMON_INPUT_DESCRIPTION_TABLE_NAME }}"
 output_description_table_name: "{{ common_setting.COMMON_OUTPUT_DESCRIPTION_TABLE_NAME }}"
