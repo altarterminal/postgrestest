@@ -11,7 +11,7 @@
 
   "COMMON_COMMON_SCHEMA_NAME": "common_schema",
 
-  "COMMON_DEVICE_SCHEMA_PREFIX": "virtio",
+  "COMMON_DEVICE_SCHEMA_PREFIX": "device",
   "COMMON_DEVICE_SCHEMA_SUFFIX": "schema",
 
   "COMMON_ADMIN_ROLE_NAME":         "admin_role",

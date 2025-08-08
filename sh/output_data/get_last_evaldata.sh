@@ -106,7 +106,7 @@ GET_LAST_TABLE_NAME="${TOOL_DIR}/get_last_table_name.sh"
 GET_ITEM_NAMES="${TOOL_DIR}/get_item_names.sh"
 
 #####################################################################
-# get last table name
+# get table name
 #####################################################################
 
 if [ "${SERIAL_NUM}" -ge 0 ]; then

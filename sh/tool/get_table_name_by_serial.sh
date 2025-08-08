@@ -86,7 +86,7 @@ EVALDATA_TABLE_NAME=$(
 )
 
 #####################################################################
-# get last table name
+# check whether table exists
 #####################################################################
 
 table_list=$(db_refer_command '\dt '"${DEVICE_SCHEMA_NAME}.*")
