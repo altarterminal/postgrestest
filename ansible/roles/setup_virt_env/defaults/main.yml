@@ -1,5 +1,2 @@
 ---
-user_name: "{{ ansible_user }}"
-user_id:   "This is dynamically determined on task execution"
-
-proxy_setting: ""
+proxy_setting: "{{ common_setting.COMMON_PROXY}}"

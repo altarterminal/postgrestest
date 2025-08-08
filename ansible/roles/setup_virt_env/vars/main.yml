@@ -1,17 +1,26 @@
 ---
+user_name: "{{ ansible_user }}"
+
 ssh_port:      "{{ common_setting.COMMON_VIRT_SSH_PORT}}"
 postgres_port: "{{ common_setting.COMMON_DB_PORT }}"
 
+dst_home_dir: "/home/{{ user_name }}"
+dst_env_dir: "{{ dst_home_dir }}/db_env"
+
 src_docker_file: "templates/Dockerfile"
-dst_docker_dir:  "/home/{{ user_name }}/db_env/dockerfile"
+dst_docker_dir:  "{{ dst_env_dir }}/dockerfile"
 dst_docker_file: "{{ dst_docker_dir }}/Dockerfile"
 
+pubkey_file_base: "id_rsa.pub"
+src_pubkey_file: "files/{{ pubkey_file_base }}"
+dst_pubkey_file: "{{ dst_docker_dir }}/{{ pubkey_file_base }}"
+
 src_compose_file: "templates/docker-compose.yml"
-dst_compose_dir:  "/home/{{ user_name }}/db_env/composefile"
+dst_compose_dir:  "{{ dst_env_dir }}/composefile"
 dst_compose_file: "{{ dst_compose_dir }}/docker-compose.yml"
 
-share_dir_on_baremetal: "/home/{{ user_name }}/db_env/share"
-share_dir_on_container: "/home/{{ user_name }}/share"
+share_dir_on_baremetal: "{{ dst_env_dir }}/share"
+share_dir_on_container: "{{ dst_home_dir }}/share"
 
 image_name:     "ubuntu_for_db_image"
 container_name: "ubuntu_for_db_container"

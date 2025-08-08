@@ -8,10 +8,10 @@
     state: directory
 
 - name: Copy public key
-  ansible.posix.synchronize:
-    src: "/home/{{ user_name }}/.ssh/id_rsa.pub"
-    dest: "{{ dst_docker_dir }}/id_rsa.pub"
-  delegate_to: "{{ inventory_hostname }}"
+  ansible.builtin.copy:
+    src: "{{ src_pubkey_file }}"
+    dest: "{{ dst_pubkey_file }}"
+    mode: "0600"
 
 - name: Get uid
   ansible.builtin.gather_facts:

@@ -3,6 +3,7 @@ FROM ubuntu:22.04
 ARG user_name="{{ user_name }}"
 ARG user_id="{{ user_id }}"
 ARG proxy_setting="{{ proxy_setting }}"
+ARG pubkey_file_base="{{ pubkey_file_base }}"
 
 # settings for proxy
 RUN if [ -n "${proxy_setting}" ]; then echo 'Acquire::http::Proxy  "http://'"${proxy_setting}"'";' >> '/etc/apt/apt.conf'; fi
@@ -31,7 +32,7 @@ RUN sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/'      /etc/ssh
 
 # settings for ssh
 RUN mkdir /home/${user_name}/.ssh
-COPY id_rsa.pub /home/${user_name}/.ssh/authorized_keys
+COPY ${pubkey_file_base} /home/${user_name}/.ssh/authorized_keys
 RUN chmod 600 /home/${user_name}/.ssh/authorized_keys
 RUN chown ${user_name}:${user_name} /home/${user_name}/.ssh/authorized_keys
 
