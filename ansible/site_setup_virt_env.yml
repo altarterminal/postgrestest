@@ -1,0 +1,8 @@
+---
+- hosts: bare
+  gather_facts: false
+  vars_files:
+    - import_common_setting.yml
+  become: false
+  roles:
+    - setup_virt_env
