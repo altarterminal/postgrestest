@@ -1,4 +1,5 @@
 #!/bin/bash
+set -u
 
 #####################################################################
 # setting
@@ -9,6 +10,7 @@ THIS_DIR="$(dirname "${THIS_FILE}")"
 TOP_DIR="$(dirname "${THIS_DIR}")"
 
 SETTING_FILE="${TOP_DIR}/common_setting.json"
+ENABLER_FILE="${THIS_DIR}/enable_sh_setting.sh"
 
 #####################################################################
 # check
@@ -30,26 +32,26 @@ if [ ! -f "${SETTING_FILE}" ]; then
 fi
 
 #####################################################################
-# parameter
+# export parameter
 #####################################################################
 
-export_command=$(
-  jq -c 'to_entries | .[]' "${SETTING_FILE}" |
-  while read -r line
-  do
-    key=$(printf '%s\n' "${line}" | jq -r '.key')
-    val=$(printf '%s\n' "${line}" | jq -r '.value')
+jq -c 'to_entries | .[]' "${SETTING_FILE}" |
+while read -r line
+do
+  key=$(printf '%s\n' "${line}" | jq -r '.key')
+  val=$(printf '%s\n' "${line}" | jq -r '.value')
 
-    printf '%s="%s"\n' "${key}" "${val}"
-  done
-)
+  printf 'export %s="%s"\n' "${key}" "${val}"
+done |
+cat >"${ENABLER_FILE}"
 
-eval "${export_command}"
+echo >>"${ENABLER_FILE}"
 
 #####################################################################
-# utility function
+# export function
 #####################################################################
 
+cat <<'EOF' >>"${ENABLER_FILE}"
 db_check_param_definition() {
   if \
     [ -z "${COMMON_DB_NAME:-}" ] ||
@@ -104,3 +106,4 @@ db_refer_command_default() {
     -p "${COMMON_DB_PORT}" \
     -c "${COMMAND}"
 }
+EOF
