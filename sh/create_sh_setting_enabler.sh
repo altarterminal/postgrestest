@@ -2,6 +2,35 @@
 set -u
 
 #####################################################################
+# help
+#####################################################################
+
+print_usage_and_exit() {
+  cat <<-USAGE 1>&2
+Usage   : ${0##*/}
+Options :
+
+Check the environment of execution and create required files.
+USAGE
+  exit 1
+}
+
+#####################################################################
+# parameter
+#####################################################################
+
+for arg in ${1+"$@"}
+do
+  case "${arg}" in
+    -h|--help|--version) print_usage_and_exit ;;
+    *)
+      echo "ERROR:${0##*/}: invalid args" 1>&2
+      exit 1
+      ;;
+  esac
+done
+
+#####################################################################
 # setting
 #####################################################################
 
@@ -69,6 +98,8 @@ db_check_param_definition() {
 db_manage_schema_command() {
   local COMMAND="$1"
 
+  db_check_param_definition
+
   psql "${COMMON_DB_NAME}" \
     -U "${COMMON_MANAGE_SCHEMA_ROLE_NAME}" \
     -h "${COMMON_DB_HOST}" \
@@ -78,6 +109,8 @@ db_manage_schema_command() {
 
 db_manage_table_command() {
   local COMMAND="$1"
+
+  db_check_param_definition
 
   psql "${COMMON_DB_NAME}" \
     -U "${COMMON_MANAGE_TABLE_ROLE_NAME}" \
@@ -89,6 +122,8 @@ db_manage_table_command() {
 db_refer_command() {
   local COMMAND="$1"
 
+  db_check_param_definition
+
   psql "${COMMON_DB_NAME}" \
     -U "${COMMON_REFER_ROLE_NAME}" \
     -h "${COMMON_DB_HOST}" \
@@ -99,6 +134,8 @@ db_refer_command() {
 
 db_refer_command_default() {
   local COMMAND="$1"
+
+  db_check_param_definition
 
   psql "${COMMON_DB_NAME}" \
     -U "${COMMON_REFER_ROLE_NAME}" \
