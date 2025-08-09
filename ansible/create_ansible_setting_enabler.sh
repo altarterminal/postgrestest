@@ -2,11 +2,53 @@
 set -u
 
 #####################################################################
+# help
+#####################################################################
+
+print_usage_and_exit() {
+  cat <<-USAGE 1>&2
+Usage   : ${0##*/}
+Options :
+
+Check the environment of execution and create required files.
+USAGE
+  exit 1
+}
+
+#####################################################################
+# parameter
+#####################################################################
+
+for arg in ${1+"$@"}
+do
+  case "${arg}" in
+    -h|--help|--version) print_usage_and_exit ;;
+    *)
+      echo "ERROR:${0##*/}: invalid args" 1>&2
+      exit 1
+      ;;
+  esac
+done
+
+#####################################################################
+# common setting
+#####################################################################
+
+THIS_FILE=$(realpath "${BASH_SOURCE[0]}")
+THIS_DIR=$(dirname "$(realpath "$0")")
+TOP_DIR=$(dirname "${THIS_DIR}")
+
+SETTING_FILE="${TOP_DIR}/common_setting.json"
+
+if [ ! -f "${SETTING_FILE}" ]; then
+  echo "ERROR:${0##*/}: setting file not found <${SETTING_FILE}>" 1>&2
+  exit 1
+fi
+
+#####################################################################
 # setting
 #####################################################################
 
-THIS_FILE="$(realpath "${BASH_SOURCE[0]}")"
-THIS_DIR="$(dirname "${THIS_FILE}")"
 KEY_DIR="${THIS_DIR}/key"
 FILES_DIR="${THIS_DIR}/roles/setup_virt_env/files"
 
@@ -14,11 +56,79 @@ CONFIG_FILE="${THIS_DIR}/ansiblg.cfg"
 SEC_KEY_FILE="${KEY_DIR}/id_rsa"
 PUB_KEY_FILE="${KEY_DIR}/id_rsa.pub"
 
+LIMIT_TIME='5'
+
+HOST_VER_DIR="${THIS_DIR}/host_vars"
+BARE_SETTING_FILE="${HOST_VER_DIR}/bare_host.yml"
+VIRT_SETTING_FILE="${HOST_VER_DIR}/virt_host.yml"
+
 ENABLER_FILE="${THIS_DIR}/enable_ansible_setting.sh"
 
 #####################################################################
-# check
+# check local tool
 #####################################################################
+
+if ! type jq >/dev/null 2>&1; then
+  echo "ERROR:${0##*/}: jq command not found" 1>&2
+  exit 1
+fi
+
+if ! type ansible >/dev/null 2>&1; then
+  echo "ERROR:${0##*/}: ansible command not found" 1>&2
+  exit 1
+fi
+
+if ! type pip3 >/dev/null 2>&1; then
+  echo "ERROR:${0##*/}: pip3 command not found" 1>&2
+  exit 1
+fi
+
+if ! pip3 freeze | grep -q '^passlib'; then
+  echo "ERROR:${0##*/}: passlib package not found" 1>&2
+  exit 1
+fi
+
+if ! pip3 freeze | grep -q '^jmespath'; then
+  echo "ERROR:${0##*/}: jmespath package not found" 1>&2
+  exit 1
+fi
+
+#####################################################################
+# import important parameter
+#####################################################################
+
+DB_HOST="$(jq -r '.COMMON_DB_HOST' "${SETTING_FILE}")"
+DB_PORT="$(jq -r '.COMMON_DB_PORT' "${SETTING_FILE}")"
+BARE_SSH_PORT="$(jq -r '.COMMON_BARE_SSH_PORT' "${SETTING_FILE}")"
+VIRT_SSH_PORT="$(jq -r '.COMMON_VIRT_SSH_PORT' "${SETTING_FILE}")"
+
+#####################################################################
+# check parameter
+#####################################################################
+
+if ! printf '%s\n' "${DB_HOST}" | grep -Eq '^[0-9]+(\.[0-9]+){3}$'; then
+  echo "ERROR:${0##*/}: invalid IP adress <${DB_HOST}>" 1>&2
+  exit 1
+fi
+
+if ! printf '%s\n' "${DB_PORT}" | grep -Eq '^[0-9]+$'; then
+  echo "ERROR:${0##*/}: invalid port number <${DB_PORT}>" 1>&2
+  exit 1
+fi
+
+if ! printf '%s\n' "${BARE_SSH_PORT}" | grep -Eq '^[0-9]+$'; then
+  echo "ERROR:${0##*/}: invalid port number <${BARE_SSH_PORT}>" 1>&2
+  exit 1
+fi
+
+if ! printf '%s\n' "${VIRT_SSH_PORT}" | grep -Eq '^[0-9]+$'; then
+  echo "ERROR:${0##*/}: invalid port number <${VIRT_SSH_PORT}>" 1>&2
+  exit 1
+fi
+
+#####################################################################
+# check user's key
+##################################################################### 
 
 if [ ! -f "${SEC_KEY_FILE}" ]; then
   echo "ERROR:${THIS_FILE##/}: secret key not found <${SEC_KEY_FILE}>"
@@ -30,12 +140,44 @@ if [ ! -f "${PUB_KEY_FILE}" ]; then
   exit 1
 fi
 
+chmod 600 "${SEC_KEY_FILE}"
+
+if ! timeout "${LIMIT_TIME}" ssh -n -i "${SEC_KEY_FILE}" "postgres@${DB_HOST}" 'true'; then
+  echo "ERROR:${0##*/}: cannot access to ${DB_HOST}:${BARE_SSH_PORT}" 1>&2
+  exit 1
+fi
+
+#####################################################################
+# check remote tool
+#####################################################################
+
+if ! timeout "${LIMIT_TIME}" ssh -n -i "${SEC_KEY_FILE}" "postgres@${DB_HOST}" \
+  'type docker' >/dev/null 2>&1; then
+  echo "ERROR:${0##*/}: docker command not found on <${DB_HOST}>" 1>&2
+  exit 1
+fi
+
 #####################################################################
 # locate file
 #####################################################################
 
 mkdir -p "${FILES_DIR}"
+
 cp "${PUB_KEY_FILE}" "${FILES_DIR%/}/"
+
+mkdir -p "${HOST_VER_DIR}"
+
+cat <<EOF | cat >"${BARE_SETTING_FILE}"
+---
+ansible_host: "${DB_HOST}"
+ansible_port: "${BARE_SSH_PORT}"
+EOF
+
+cat <<EOF | cat >"${VIRT_SETTING_FILE}"
+---
+ansible_host: "${DB_HOST}"
+ansible_port: "${VIRT_SSH_PORT}"
+EOF
 
 #####################################################################
 # export parameter 
@@ -44,3 +186,4 @@ cp "${PUB_KEY_FILE}" "${FILES_DIR%/}/"
 cat <<EOF >"${ENABLER_FILE}"
 export ANSIBLE_CONFIG="${CONFIG_FILE}"
 export ANSIBLE_PRIVATE_KEY_FILE="${SEC_KEY_FILE}"
+EOF
