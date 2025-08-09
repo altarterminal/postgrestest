@@ -3,9 +3,9 @@
   ansible.builtin.import_tasks: ./check_prerequisite.yml
   tags: check_prerequisite
 
-- name: Import install dependency
-  ansible.builtin.import_tasks: ./install_dependency.yml
-  tags: install_dependency
+- name: Import install setup dependency
+  ansible.builtin.import_tasks: ./install_setup_dependency.yml
+  tags: install_setup_dependency
 
 - name: Import build docker image
   ansible.builtin.import_tasks: ./build_docker_image.yml

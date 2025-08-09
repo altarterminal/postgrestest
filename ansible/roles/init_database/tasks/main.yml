@@ -1,7 +1,7 @@
 ---
-- name: Import install dependency
-  ansible.builtin.import_tasks: ./install_dependency.yml
-  tags: install_dependency
+- name: Import install init dependency
+  ansible.builtin.import_tasks: ./install_init_dependency.yml
+  tags: install_init_dependency
 
 - name: Import init data
   ansible.builtin.import_tasks: ./init_data.yml

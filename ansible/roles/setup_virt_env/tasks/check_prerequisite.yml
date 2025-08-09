@@ -4,11 +4,6 @@
   register: result
   changed_when: result.rc != 0
 
-- name: Check rsync is installed
-  ansible.builtin.shell: "type rsync >/dev/null 2>&1"
-  register: result
-  changed_when: result.rc != 0
-
 - name: Check the user belongs to docker group
   ansible.builtin.shell: "id -Gn {{ user_name }} | tr ' ' '\n' | grep -q '^docker$'"
   register: result

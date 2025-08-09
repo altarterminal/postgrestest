@@ -1,8 +1,8 @@
 ---
-- name: Import install postgres pre
-  ansible.builtin.import_tasks: ./install_postgres_pre.yml
-  tags: install_postgres_pre
+- name: Import install install dependency
+  ansible.builtin.import_tasks: ./install_install_dependency.yml
+  tags: install_install_dependency
 
-- name: Import install postgres main
-  ansible.builtin.import_tasks: ./install_postgres_main.yml
-  tags: install_postgres_main
+- name: Import install postgres
+  ansible.builtin.import_tasks: ./install_postgres.yml
+  tags: install_postgres
