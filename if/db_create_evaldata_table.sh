@@ -22,8 +22,7 @@ USAGE
 #####################################################################
 
 THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
-TOP_DIR=$(dirname "${THIS_DIR}")
-SCRIPT_DIR="${TOP_DIR}/sh/input_data"
+SCRIPT_DIR="${THIS_DIR}/../sh/input_data"
 SCRIPT_FILE="${SCRIPT_DIR}/create_evaldata_table.sh"
 
 if [ ! -f "${SCRIPT_FILE}" ] || [ ! -x "${SCRIPT_FILE}" ]; then
