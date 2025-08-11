@@ -34,8 +34,7 @@ done
 # setting
 #####################################################################
 
-THIS_FILE="$(realpath "$0")"
-THIS_DIR="$(dirname "${THIS_FILE}")"
+THIS_DIR="$(dirname "$(realpath "$0")")"
 TOP_DIR="$(dirname "${THIS_DIR}")"
 
 SETTING_FILE="${TOP_DIR}/common_setting.json"
