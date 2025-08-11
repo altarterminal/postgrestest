@@ -52,7 +52,7 @@ IS_CSV="${opt_c}"
 #####################################################################
 
 THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
-SETTING_FILE="${THIS_DIR}/../source_common_setting.sh"
+SETTING_FILE="${THIS_DIR}/../enable_sh_setting.sh"
 
 if [ ! -f "${SETTING_FILE}" ]; then
   echo "ERROR:${0##*/}: setting file not found <${SETTING_FILE}>" 1>&2
