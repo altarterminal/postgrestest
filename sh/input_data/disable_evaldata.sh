@@ -55,6 +55,31 @@ do
   i=$((i + 1))
 done
 
+if [ -z "${opr_p}" ]; then
+  echo "ERROR:${0##*/}: project name must be specified" 1>&2
+  exit 1
+fi
+
+if [ -z "${opr_v}" ]; then
+  echo "error:${0##*/}: project version must be specified" 1>&2
+  exit 1
+fi
+
+if [ -z "${opr_n}" ]; then
+  echo "error:${0##*/}: device name must be specified" 1>&2
+  exit 1
+fi
+
+if ! printf '%s\n' "${opr_i}" | grep -Eq '^[0-9]+(-[0-9]+)?(,[0-9]+(-[0-9]+)?)*$'; then
+  echo "error:${0##*/}: invalid ID specified <${opr_i}>" 1>&2
+  exit 1
+fi
+
+if [ -z "${opr_r}" ]; then
+  echo "ERROR:${0##*/}: disable reason must be specified" 1>&2
+  exit 1
+fi
+
 if ! printf '%s\n' "${opt_s}" | grep -Eq '^-?[0-9]+$'; then
   echo "ERROR:${0##*/}: invalid number specified <${opt_s}>" 1>&2
   exit 1
@@ -86,27 +111,12 @@ fi
 # setting
 #####################################################################
 
-DB_NAME="${COMMON_DB_NAME}"
-DB_HOST="${COMMON_DB_HOST}"
-DB_PORT="${COMMON_DB_PORT}"
-
-REFER_ROLE_NAME="${COMMON_REFER_ROLE_NAME}"
-
-SCHEMA_NAME="${COMMON_DEVICE_SCHEMA_PREFIX}_${DEVICE_NAME}_${COMMON_DEVICE_SCHEMA_SUFFIX}"
+DEVICE_SCHEMA_NAME="${COMMON_DEVICE_SCHEMA_PREFIX}_${DEVICE_NAME}_${COMMON_DEVICE_SCHEMA_SUFFIX}"
 
 THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 TOOL_DIR="${THIS_DIR}/../tool"
 GET_TABLE_NAME_BY_SERIAL="${TOOL_DIR}/get_table_name_by_serial.sh"
 GET_LAST_TABLE_NAME="${TOOL_DIR}/get_last_table_name.sh"
-
-#####################################################################
-# check reason
-#####################################################################
-
-if [ -z "${DISABLE_REASON}" ]; then
-  echo "ERROR:${0##*/}: disable reason must be specified" 1>&2
-  exit 1
-fi
 
 #####################################################################
 # decompose ids

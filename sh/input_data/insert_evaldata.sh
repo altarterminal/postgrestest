@@ -63,6 +63,33 @@ do
   i=$((i + 1))
 done
 
+if [ -z "${opr_p}" ]; then
+  echo "ERROR:${0##*/}: project name must be specified" 1>&2
+  exit 1
+fi
+
+if [ -z "${opr_v}" ]; then
+  echo "error:${0##*/}: project version must be specified" 1>&2
+  exit 1
+fi
+
+if [ -z "${opr_n}" ]; then
+  echo "error:${0##*/}: device name must be specified" 1>&2
+  exit 1
+fi
+
+if [ -z "${opr_f}" ]; then
+  echo "error:${0##*/}: input file must be specified" 1>&2
+  exit 1
+fi
+
+if [ "${opr_f}" != '-' ]; then
+  if [ ! -f "${opr_f}" ] || [ ! -r "${opr_f}" ]; then
+    echo "ERROR:${0##*/}: invalid file specified <${opr_f}>" 1>&2
+    exit 1
+  fi
+fi
+
 PROJECT_NAME="${opr_p}"
 PROJECT_VERSION="${opr_v}"
 DEVICE_NAME="${opr_n}"

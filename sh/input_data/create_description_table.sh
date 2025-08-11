@@ -46,6 +46,16 @@ do
   i=$((i + 1))
 done
 
+if [ -z "${opr_n}" ]; then
+  echo "ERROR:${0##*/}: device name must be specified" 1>&2
+  exit 1
+fi
+
+if [ ! -f "${opr_f}" ] || [ ! -r "${opr_f}" ]; then
+  echo "ERROR:${0##*/}: invalid file specified <${opr_f}>" 1>&2
+  exit 1
+fi
+
 DEVICE_NAME="${opr_n}"
 JSON_FILE="${opr_f}"
 

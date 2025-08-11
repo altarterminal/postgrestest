@@ -39,6 +39,11 @@ do
   i=$((i + 1))
 done
 
+if [ -z "${opr}" ]; then
+  echo "ERROR:${0##*/}: device name must be specified" 1>&2
+  exit 1
+fi
+
 DEVICE_NAME="${opr}"
 
 #####################################################################
