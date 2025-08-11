@@ -34,7 +34,7 @@ done
 # setting
 #####################################################################
 
-THIS_FILE="$(realpath "${BASH_SOURCE[0]}")"
+THIS_FILE="$(realpath "$0")"
 THIS_DIR="$(dirname "${THIS_FILE}")"
 TOP_DIR="$(dirname "${THIS_DIR}")"
 
