@@ -34,7 +34,6 @@ done
 # common setting
 #####################################################################
 
-THIS_FILE=$(realpath "${BASH_SOURCE[0]}")
 THIS_DIR=$(dirname "$(realpath "$0")")
 TOP_DIR=$(dirname "${THIS_DIR}")
 
@@ -131,12 +130,12 @@ fi
 ##################################################################### 
 
 if [ ! -f "${SEC_KEY_FILE}" ]; then
-  echo "ERROR:${THIS_FILE##/}: secret key not found <${SEC_KEY_FILE}>"
+  echo "ERROR:${0##/}: secret key not found <${SEC_KEY_FILE}>"
   exit 1
 fi
 
 if [ ! -f "${PUB_KEY_FILE}" ]; then
-  echo "ERROR:${THIS_FILE##/}: secret key not found <${SEC_KEY_FILE}>"
+  echo "ERROR:${0##/}: secret key not found <${SEC_KEY_FILE}>"
   exit 1
 fi
 
