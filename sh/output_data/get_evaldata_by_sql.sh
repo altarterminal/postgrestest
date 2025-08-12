@@ -5,8 +5,8 @@ set -u
 # help
 #####################################################################
 
-print_usage_and_exit () {
-  cat <<-USAGE 1>&2
+print_usage_and_exit() {
+  cat <<USAGE 1>&2
 Usage   : ${0##*/} <SQL statement>
 Options : -c
 
@@ -25,8 +25,7 @@ opr=''
 opt_c='no'
 
 i=1
-for arg in ${1+"$@"}
-do
+for arg in ${1+"$@"}; do
   case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
     -c*)                 opt_c="${arg#-c}"    ;;
@@ -51,7 +50,7 @@ IS_CSV="${opt_c}"
 # common setting
 #####################################################################
 
-THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+THIS_DIR=$(dirname "$(realpath "$0")")
 SETTING_FILE="${THIS_DIR}/../enable_sh_setting.sh"
 
 if [ ! -f "${SETTING_FILE}" ]; then
@@ -76,15 +75,17 @@ REFER_ROLE_NAME="${COMMON_REFER_ROLE_NAME}"
 #####################################################################
 
 if [ "${IS_CSV}" = 'yes' ]; then
-  result=$(psql "${DB_NAME}" \
-    -U "${REFER_ROLE_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" \
-    --csv \
-    -c "${SQL_STATEMENT}"
+  result=$(
+    psql "${DB_NAME}" \
+      -U "${REFER_ROLE_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" \
+      --csv \
+      -c "${SQL_STATEMENT}"
   )
 else
-  result=$(psql "${DB_NAME}" \
-    -U "${REFER_ROLE_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" \
-    -c "${SQL_STATEMENT}"
+  result=$(
+    psql "${DB_NAME}" \
+      -U "${REFER_ROLE_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" \
+      -c "${SQL_STATEMENT}"
   )
 fi
 

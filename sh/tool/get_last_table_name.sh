@@ -5,8 +5,8 @@ set -u
 # help
 #####################################################################
 
-print_usage_and_exit () {
-  cat <<-USAGE 1>&2
+print_usage_and_exit() {
+  cat <<USAGE 1>&2
 Usage   : ${0##*/} <project name> <project version> <device name>
 Options :
 
@@ -24,16 +24,15 @@ opr_v=''
 opr_n=''
 
 i=1
-for arg in ${1+"$@"}
-do
+for arg in ${1+"$@"}; do
   case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
     *)
-      if   [ $((i+2)) -eq $# ] && [ -z "${opr_p}" ]; then
+      if   [ $((i + 2)) -eq $# ] && [ -z "${opr_p}" ]; then
         opr_p="${arg}"
-      elif [ $((i+1)) -eq $# ] && [ -z "${opr_v}" ]; then
+      elif [ $((i + 1)) -eq $# ] && [ -z "${opr_v}" ]; then
         opr_v="${arg}"
-      elif [ $((i+0)) -eq $# ] && [ -z "${opr_n}" ]; then
+      elif [ $((i + 0)) -eq $# ] && [ -z "${opr_n}" ]; then
         opr_n="${arg}"
       else
         echo "ERROR:${0##*/}: invalid args" 1>&2
@@ -53,7 +52,7 @@ DEVICE_NAME="${opr_n}"
 # common setting
 #####################################################################
 
-THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+THIS_DIR=$(dirname "$(realpath "$0")")
 SETTING_FILE="${THIS_DIR}/../enable_sh_setting.sh"
 
 if [ ! -f "${SETTING_FILE}" ]; then
@@ -84,11 +83,11 @@ if [ "${exit_code}" -ne 0 ]; then
 fi
 
 target_table_name=$(
-  printf '%s\n' "${table_list}"                                     |
-  awk -F, '{ print $2; }'                                           |
-  grep "^${EVALDATA_TABLE_NAME_PREFIX}"                             |
-  sort                                                              |
-  tail -n 1
+  printf '%s\n' "${table_list}" |
+    awk -F, '{ print $2; }' |
+    grep "^${EVALDATA_TABLE_NAME_PREFIX}" |
+    sort |
+    tail -n 1
 )
 
 if [ -z "${target_table_name}" ]; then

@@ -5,8 +5,8 @@ set -u
 # help
 #####################################################################
 
-print_usage_and_exit () {
-  cat <<-USAGE 1>&2
+print_usage_and_exit() {
+  cat <<USAGE 1>&2
 Usage   : ${0##*/}
 Options : -d<dir name> -n<output name> -f
 
@@ -28,8 +28,7 @@ opt_n=''
 opt_f='no'
 
 i=1
-for arg in ${1+"$@"}
-do
+for arg in ${1+"$@"}; do
   case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
     -d*)                 opt_d="${arg#-d}"    ;;
@@ -52,7 +51,7 @@ IS_OVERWRITE="${opt_f}"
 # common setting
 #####################################################################
 
-THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+THIS_DIR=$(dirname "$(realpath "$0")")
 SETTING_FILE="${THIS_DIR}/../enable_sh_setting.sh"
 
 if [ ! -f "${SETTING_FILE}" ]; then
@@ -120,11 +119,10 @@ trap '[ -e ${TEMP_FILE} ] && rm ${TEMP_FILE}' EXIT
 #####################################################################
 
 if ! pg_dump "${DB_NAME}" \
-    -U "${REFER_ROLE_NAME}" \
-    -h "${DB_HOST}" \
-    -p "${DB_PORT}" \
-    >"${TEMP_FILE}"
-then
+  -U "${REFER_ROLE_NAME}" \
+  -h "${DB_HOST}" \
+  -p "${DB_PORT}" \
+  >"${TEMP_FILE}"; then
   echo "ERROR:${0##*/}: backup failed for some reason" 1>&2
   exit 1
 fi

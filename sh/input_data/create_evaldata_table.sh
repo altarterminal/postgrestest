@@ -5,8 +5,8 @@ set -u
 # help
 #####################################################################
 
-print_usage_and_exit () {
-  cat <<-USAGE 1>&2
+print_usage_and_exit() {
+  cat <<USAGE 1>&2
 Usage   : ${0##*/} <project name> <project version> <device name> <file>
 Options : -d
 
@@ -28,8 +28,7 @@ opr_f=''
 opt_d='no'
 
 i=1
-for arg in ${1+"$@"}
-do
+for arg in ${1+"$@"}; do
   case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
     -d)                  opt_d='yes'          ;;
@@ -83,7 +82,7 @@ IS_DRYRUN="${opt_d}"
 # common setting
 #####################################################################
 
-THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+THIS_DIR=$(dirname "$(realpath "$0")")
 SETTING_FILE="${THIS_DIR}/../enable_sh_setting.sh"
 
 if [ ! -f "${SETTING_FILE}" ]; then
@@ -109,7 +108,7 @@ ABS_OUTPUT_DESC_TABLE_NAME="${SCHEMA_NAME}.${OUTPUT_DESC_TABLE_NAME}"
 
 EVALDATA_TABLE_PREFIX="${COMMON_EVALDATA_TABLE_PREFIX}"
 
-THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+THIS_DIR=$(dirname "$(realpath "$0")")
 
 TOOL_DIR="${THIS_DIR}/../tool"
 GET_LAST_TABLE_NAME="${TOOL_DIR}/get_last_table_name.sh"
@@ -137,7 +136,7 @@ if [ -z "$(jq '.out // empty' "${JSON_FILE}")" ]; then
 fi
 
 #####################################################################
-# Check input items
+# check input items
 #####################################################################
 
 file_input_names=$(jq -r '.in[]' "${JSON_FILE}" | sort)
@@ -163,7 +162,7 @@ if [ -n "${only_file_input_names}" ]; then
 fi
 
 #####################################################################
-# Check output names
+# check output names
 #####################################################################
 
 file_output_names=$(jq -r '.out[]' "${JSON_FILE}" | sort)
@@ -189,7 +188,7 @@ if [ -n "${only_file_output_names}" ]; then
 fi
 
 #####################################################################
-# Get serial
+# get serial
 #####################################################################
 
 target_table_name=$(
@@ -204,16 +203,17 @@ if [ "${exit_code}" -ne 0 ]; then
 fi
 
 prev_serial_num=$(
-  printf '%s\n' "${target_table_name}"                              |
-  sed 's!^.*_\([0-9][0-9]\)!\1!'                                    |
-  sed 's!^0*!!'                                                     |
-  {
-    # This is needed in case no table has not been created before
-    cat; echo '-1';
-  }                                                                 |
-  grep -v '^$'                                                      |
-  sort -n                                                           |
-  tail -n 1
+  printf '%s\n' "${target_table_name}" |
+    sed 's!^.*_\([0-9][0-9]\)!\1!' |
+    sed 's!^0*!!' |
+    {
+      # This is needed in case no table has not been created before
+      cat
+      echo '-1'
+    } |
+    grep -v '^$' |
+    sort -n |
+    tail -n 1
 )
 
 next_serial_num=$((prev_serial_num + 1))
@@ -228,56 +228,50 @@ next_table_name=$(
 abs_next_table_name="${SCHEMA_NAME}.${next_table_name}"
 
 #####################################################################
-# Create command
+# create command
 #####################################################################
 
 make_table_command=$(
+  {
+    # common item ###################################################
 
-{
-  # common item #####################################################
+    jq -c '.[]' "${COMMON_ITEM_JSON_FILE}" |
+      while read -r line; do
+        common_name=$(printf '%s\n' "${line}" | jq -r '.name // empty')
+        common_type=$(printf '%s\n' "${line}" | jq -r '.type // empty')
 
-  jq -c '.[]' "${COMMON_ITEM_JSON_FILE}"                            |
-  while read -r line
-  do
-    common_name=$(printf '%s\n' "${line}" | jq -r '.name // empty')
-    common_type=$(printf '%s\n' "${line}" | jq -r '.type // empty')
+        printf '%s %s\n' "${common_name}" "${common_type}"
+      done |
+      sed 's!$!,!' | sed 's!^!  !'
 
-    printf '%s %s\n' "${common_name}" "${common_type}"
-  done                                                              |
-  sed 's!$!,!' | sed 's!^!  !'
+    # input item ####################################################
 
-  # input item ######################################################
+    in_command=$(
+      printf 'SELECT %s FROM %s\n' \
+        'input_name,input_type' "${ABS_INPUT_DESC_TABLE_NAME}"
+    )
 
-  in_command=$(
-    printf 'SELECT %s FROM %s\n' \
-      'input_name,input_type' "${ABS_INPUT_DESC_TABLE_NAME}"
-  )
+    db_refer_command "${in_command}" | tr ',' ' ' | sed 's!$!,!' | sed 's!^!  !'
 
-  db_refer_command "${in_command}" |
-  tr ',' ' ' | sed 's!$!,!' | sed 's!^!  !'
+    # output item ###################################################
 
-  # output item #####################################################
+    out_command=$(
+      printf 'SELECT %s FROM %s\n' \
+        'output_name,output_type' "${ABS_OUTPUT_DESC_TABLE_NAME}"
+    )
 
-  out_command=$(
-    printf 'SELECT %s FROM %s\n' \
-      'output_name,output_type' "${ABS_OUTPUT_DESC_TABLE_NAME}"
-  )
-
-  db_refer_command "${out_command}"                                 |
-  tr ',' ' ' | sed 's!$!,!' | sed 's!^!  !'
-}                                                                   |
-
-sed '$s!,$!!'                                                       |
-
-{
-  echo "CREATE TABLE ${abs_next_table_name} ("
-  cat
-  echo ')'
-}
+    db_refer_command "${out_command}" | tr ',' ' ' | sed 's!$!,!' | sed 's!^!  !'
+  } |
+    sed '$s!,$!!' |
+    {
+      echo "CREATE TABLE ${abs_next_table_name} ("
+      cat
+      echo ')'
+    }
 )
 
 #####################################################################
-# Create table
+# create table
 #####################################################################
 
 if [ "${IS_DRYRUN}" = 'yes' ]; then

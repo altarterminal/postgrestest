@@ -5,8 +5,8 @@ set -u
 # help
 #####################################################################
 
-print_usage_and_exit () {
-  cat <<-USAGE 1>&2
+print_usage_and_exit() {
+  cat <<USAGE 1>&2
 Usage   : ${0##*/} <project name> <project version> <device name> <file>
 Options : 
 
@@ -28,19 +28,18 @@ opr_f=''
 opt_d='no'
 
 i=1
-for arg in ${1+"$@"}
-do
+for arg in ${1+"$@"}; do
   case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
     -d)                  opt_d='yes'          ;;
     *)
-      if   [ $((i+3)) -eq $# ] && [ -z "${opr_p}" ]; then
+      if   [ $((i + 3)) -eq $# ] && [ -z "${opr_p}" ]; then
         opr_p="${arg}"
-      elif [ $((i+2)) -eq $# ] && [ -z "${opr_v}" ]; then
+      elif [ $((i + 2)) -eq $# ] && [ -z "${opr_v}" ]; then
         opr_v="${arg}"
-      elif [ $((i+1)) -eq $# ] && [ -z "${opr_n}" ]; then
+      elif [ $((i + 1)) -eq $# ] && [ -z "${opr_n}" ]; then
         opr_n="${arg}"
-      elif [ $((i+0)) -eq $# ] && [ -z "${opr_f}" ]; then
+      elif [ $((i + 0)) -eq $# ] && [ -z "${opr_f}" ]; then
         opr_f="${arg}"
       else
         echo "ERROR:${0##*/}: invalid args" 1>&2
@@ -83,7 +82,7 @@ IS_DRYRUN="${opt_d}"
 # common setting
 #####################################################################
 
-THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+THIS_DIR=$(dirname "$(realpath "$0")")
 SETTING_FILE="${THIS_DIR}/../enable_sh_setting.sh"
 
 if [ ! -f "${SETTING_FILE}" ]; then
@@ -103,7 +102,7 @@ DEVICE_SCHEMA_NAME="${COMMON_DEVICE_SCHEMA_PREFIX}_${DEVICE_NAME}_${COMMON_DEVIC
 ABS_IMAGE_TABLE_NAME="${COMMON_SCHEMA_NAME}.${COMMON_IMAGE_TABLE_NAME}"
 ABS_REALDEVICE_TABLE_NAME="${COMMON_SCHEMA_NAME}.${COMMON_REALDEVICE_TABLE_NAME}"
 
-THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+THIS_DIR=$(dirname "$(realpath "$0")")
 TOOL_DIR="${THIS_DIR}/../tool"
 GET_LAST_TABLE_NAME="${TOOL_DIR}/get_last_table_name.sh"
 GET_ITEM_NAMES="${TOOL_DIR}/get_item_names.sh"
@@ -151,7 +150,10 @@ image_id=$(
 )
 
 if [ -z "${image_id}" ]; then
-  echo "ERROR:${0##*/}: image not registered on image table <${evaldata_image_md5sum}>" 1>&2
+  printf 'ERROR:%s: %s <%s>\n' \
+    "${0##*/}" \
+    'image not registered on image table' \
+    "${evaldata_image_md5sum}" 1>&2
   exit 1
 fi
 
@@ -168,7 +170,10 @@ realdevice_id=$(
 )
 
 if [ -z "${realdevice_id}" ]; then
-  echo "ERROR:${0##*/}: realdevice not registered on realdevice table <${evaldata_realdevice_serial}>" 1>&2
+  printf 'ERROR:%s: %s <%s>\n' \
+    "${0##*/}" \
+    'realdevice not registered on realdevice table' \
+    "${evaldata_realdevice_serial}" 1>&2
   exit 1
 fi
 
@@ -220,17 +225,15 @@ evaldata_input_names=$(jq -r '.in | keys | .[]' "${JSON_FILE}" | sort)
 evaldata_output_names=$(jq -r '.out | keys | .[]' "${JSON_FILE}" | sort)
 
 if ! diff \
-    <(printf '%s\n' "${evaldata_input_names}") \
-    <(printf '%s\n' "${target_input_names}")
-then
+  <(printf '%s\n' "${evaldata_input_names}") \
+  <(printf '%s\n' "${target_input_names}"); then
   echo "ERROR:${0##*/}: there is inconsistent on input items between file and table"
   exit 1
 fi
 
 if ! diff \
   <(printf '%s\n' "${evaldata_output_names}") \
-  <(printf '%s\n' "${target_output_names}")
-then
+  <(printf '%s\n' "${target_output_names}"); then
   echo "ERROR:${0##*/}: there is inconsistent on output items between file and table"
   exit 1
 fi
@@ -243,53 +246,46 @@ this_date=$(date '+%Y-%m-%d %H:%M:%S')
 default_validity='TRUE'
 
 insert_key_value_pairs=$(
-{
-  # common item #####################################################
-  jq 'to_entries' "${JSON_FILE}"                                    |
-  jq '.[] | select(.key != "in") | select(.key != "out")'           |
-  jq 'select(.key != "image_md5sum")'                               |
-  jq 'select(.key != "realdevice_serial")'                          |
-  { 
-    cat
-    printf '{"key":"%s","value":"%s"}\n' 'measure_date'  "${this_date}"
-    printf '{"key":"%s","value":"%s"}\n' 'validity'      "${default_validity}"
-    printf '{"key":"%s","value":"%s"}\n' 'image_id'      "${image_id}"
-    printf '{"key":"%s","value":"%s"}\n' 'realdevice_id' "${realdevice_id}"
-  }                                                                 |
-  jq -c
+  {
+    # common item ###################################################
+    cat "${JSON_FILE}" |
+      jq 'to_entries' |
+      jq '.[] | select(.key != "in") | select(.key != "out")' |
+      jq 'select(.key != "image_md5sum")' |
+      jq 'select(.key != "realdevice_serial")' |
+      jq -c
 
-  # input item ######################################################
-  jq '.in' "${JSON_FILE}"                                           |
-  jq 'to_entries'                                                   |
-  jq -c '.[]'
+    {
+      printf '{"key":"%s","value":"%s"}\n' 'measure_date' "${this_date}"
+      printf '{"key":"%s","value":"%s"}\n' 'validity' "${default_validity}"
+      printf '{"key":"%s","value":"%s"}\n' 'image_id' "${image_id}"
+      printf '{"key":"%s","value":"%s"}\n' 'realdevice_id' "${realdevice_id}"
+    } | jq -c
 
-  # output item #####################################################
-  jq '.out' "${JSON_FILE}"                                          |
-  jq 'to_entries'                                                   |
-  jq -c '.[]'
-}                                                                   |
+    # input item ####################################################
+    jq '.in' "${JSON_FILE}" | jq 'to_entries' | jq -c '.[]'
 
-jq -s | jq 'sort_by(.key)' | jq -c '.[]'
+    # output item ###################################################
+    jq '.out' "${JSON_FILE}" | jq 'to_entries' | jq -c '.[]'
+  } | jq -s | jq 'sort_by(.key)' | jq -c '.[]'
 )
 
 key_tuple=$(
   printf '%s\n' "${insert_key_value_pairs}" |
-  while read -r line
-  do
-    key=$(printf '%s\n' "${line}" | jq -r '.key')
-    printf "%s," "${key}"
-  done |
-  sed 's!,$!!'
+    while read -r line; do
+      key=$(printf '%s\n' "${line}" | jq -r '.key')
+      printf "%s," "${key}"
+    done |
+    sed 's!,$!!'
 )
 
 val_tuple=$(
   printf '%s\n' "${insert_key_value_pairs}" |
-  while read -r line
-  do
-    val=$(printf '%s\n' "${line}" | jq -r '.value')
-    printf "'%s'," "${val}"
-  done |
-  sed 's!,$!!'
+    while read -r line; do
+      val=$(printf '%s\n' "${line}" | jq -r '.value')
+      printf "'%s'," "${val}"
+    done |
+    sed 's!,$!!'
 )
 
 insert_command=''

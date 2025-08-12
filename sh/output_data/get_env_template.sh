@@ -5,8 +5,8 @@ set -u
 # help
 #####################################################################
 
-print_usage_and_exit () {
-  cat <<-USAGE 1>&2
+print_usage_and_exit() {
+  cat <<USAGE 1>&2
 Usage   : ${0##*/} <project name> <project version>
 Options : -c -j
 
@@ -28,16 +28,15 @@ opt_c='no'
 opt_j='no'
 
 i=1
-for arg in ${1+"$@"}
-do
+for arg in ${1+"$@"}; do
   case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
     -c)                  opt_c='yes'          ;;
     -j)                  opt_j='yes'          ;;
     *)
-      if   [ $((i+1)) -eq $# ] && [ -z "${opr_p}" ]; then
+      if   [ $((i + 1)) -eq $# ] && [ -z "${opr_p}" ]; then
         opr_p="${arg}"
-      elif [ $((i+0)) -eq $# ] && [ -z "${opr_v}" ]; then
+      elif [ $((i + 0)) -eq $# ] && [ -z "${opr_v}" ]; then
         opr_v="${arg}"
       else
         echo "ERROR:${0##*/}: invalid args" 1>&2
@@ -64,7 +63,7 @@ IS_JSON="${opt_j}"
 # common setting
 #####################################################################
 
-THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+THIS_DIR=$(dirname "$(realpath "$0")")
 SETTING_FILE="${THIS_DIR}/../enable_sh_setting.sh"
 
 if [ ! -f "${SETTING_FILE}" ]; then
@@ -122,33 +121,36 @@ fi
 #####################################################################
 
 if [ "${IS_JSON}" = 'yes' ]; then
-  result=$(psql "${DB_NAME}" \
-    -U "${REFER_ROLE_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" \
-    -t \
-    -c \
-    "SELECT to_json(${ENV_TEMPLATE_TABLE_NAME})
-     FROM ${ABS_ENV_TEMPLATE_TABLE_NAME}
-     WHERE (project_name, project_version)
-     IN (('${PROJECT_NAME}','${PROJECT_VERSION}'));"
+  result=$(
+    psql "${DB_NAME}" \
+      -U "${REFER_ROLE_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" \
+      -t \
+      -c \
+      "SELECT to_json(${ENV_TEMPLATE_TABLE_NAME})
+       FROM ${ABS_ENV_TEMPLATE_TABLE_NAME}
+       WHERE (project_name, project_version)
+       IN (('${PROJECT_NAME}','${PROJECT_VERSION}'));"
   )
 elif [ "${IS_CSV}" = 'yes' ]; then
-  result=$(psql "${DB_NAME}" \
-    -U "${REFER_ROLE_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" \
-    --csv \
-    -c \
-    "SELECT *
-     FROM ${ABS_ENV_TEMPLATE_TABLE_NAME}
-     WHERE (project_name, project_version)
-     IN (('${PROJECT_NAME}','${PROJECT_VERSION}'));"
+  result=$(
+    psql "${DB_NAME}" \
+      -U "${REFER_ROLE_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" \
+      --csv \
+      -c \
+      "SELECT *
+       FROM ${ABS_ENV_TEMPLATE_TABLE_NAME}
+       WHERE (project_name, project_version)
+       IN (('${PROJECT_NAME}','${PROJECT_VERSION}'));"
   )
 else
-  result=$(psql "${DB_NAME}" \
-    -U "${REFER_ROLE_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" \
-    -c \
-    "SELECT *
-     FROM ${ABS_ENV_TEMPLATE_TABLE_NAME}
-     WHERE (project_name, project_version)
-     IN (('${PROJECT_NAME}','${PROJECT_VERSION}'));"
+  result=$(
+    psql "${DB_NAME}" \
+      -U "${REFER_ROLE_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" \
+      -c \
+      "SELECT *
+       FROM ${ABS_ENV_TEMPLATE_TABLE_NAME}
+       WHERE (project_name, project_version)
+       IN (('${PROJECT_NAME}','${PROJECT_VERSION}'));"
   )
 fi
 

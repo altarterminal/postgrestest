@@ -5,8 +5,8 @@ set -u
 # help
 #####################################################################
 
-print_usage_and_exit () {
-  cat <<-USAGE 1>&2
+print_usage_and_exit() {
+  cat <<USAGE 1>&2
 Usage   : ${0##*/} <project name> <project version> <device name> <file>
 Options : -l
 
@@ -38,20 +38,19 @@ opt_l='no'
 opt_d='no'
 
 i=1
-for arg in ${1+"$@"}
-do
+for arg in ${1+"$@"}; do
   case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
     -l)                  opt_l='yes'          ;;
     -d)                  opt_d='yes'          ;;
     *)
-      if   [ $((i+3)) -eq $# ] && [ -z "${opr_p}" ]; then
+      if   [ $((i + 3)) -eq $# ] && [ -z "${opr_p}" ]; then
         opr_p="${arg}"
-      elif [ $((i+2)) -eq $# ] && [ -z "${opr_v}" ]; then
+      elif [ $((i + 2)) -eq $# ] && [ -z "${opr_v}" ]; then
         opr_v="${arg}"
-      elif [ $((i+1)) -eq $# ] && [ -z "${opr_n}" ]; then
+      elif [ $((i + 1)) -eq $# ] && [ -z "${opr_n}" ]; then
         opr_n="${arg}"
-      elif [ $((i+0)) -eq $# ] && [ -z "${opr_f}" ]; then
+      elif [ $((i + 0)) -eq $# ] && [ -z "${opr_f}" ]; then
         opr_f="${arg}"
       else
         echo "ERROR:${0##*/}: invalid args" 1>&2
@@ -102,7 +101,7 @@ IS_DRYRUN="${opt_d}"
 # common setting
 #####################################################################
 
-THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+THIS_DIR=$(dirname "$(realpath "$0")")
 SETTING_FILE="${THIS_DIR}/../enable_sh_setting.sh"
 
 if [ ! -f "${SETTING_FILE}" ]; then
@@ -116,7 +115,7 @@ fi
 # setting
 #####################################################################
 
-THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+THIS_DIR=$(dirname "$(realpath "$0")")
 BODY_SCRIPT="${THIS_DIR}/insert_evaldata_body.sh"
 
 THIS_DATE=$(date '+%Y%m%d_%H%M%S')
@@ -137,6 +136,7 @@ fi
 TEMP_CONTENT_FILE="$(mktemp "${TEMP_CONTENT_NAME}")"
 TEMP_LIST_FILE="$(mktemp "${TEMP_LIST_NAME}")"
 TEMP_UNITDATA_FILE="$(mktemp "${TEMP_UNITDATA_NAME}")"
+
 trap '
   [ -e ${TEMP_CONTENT_FILE} ] && rm ${TEMP_CONTENT_FILE}
   [ -e ${TEMP_LIST_FILE} ] && rm ${TEMP_LIST_FILE}
@@ -156,50 +156,47 @@ if [ "${IS_FILELIST}" = 'no' ]; then
     printf '%s\n' "${INPUT_FILE}" >"${TEMP_LIST_FILE}"
   fi
 else
-  cat "${INPUT_FILE}" | tr ',' '\n' | tr ' ' '\n' |
-  grep -v '^ *$' | grep -v '^ *#' |
-  cat >"${TEMP_LIST_FILE}"
+  cat "${INPUT_FILE}" |
+    tr ',' '\n' | tr ' ' '\n' |
+    grep -v '^ *$' | grep -v '^ *#' |
+    cat >"${TEMP_LIST_FILE}"
 fi
 
 cat "${TEMP_LIST_FILE}" |
-while read -r content_file
-do
-  if [ ! -f "${content_file}" ] || [ ! -r "${content_file}" ]; then
-    echo "ERROR:${0##*/}: invalid file specified <${content_file}>" 1>&2
-    exit 1
-  fi
+  while read -r content_file; do
+    if [ ! -f "${content_file}" ] || [ ! -r "${content_file}" ]; then
+      echo "ERROR:${0##*/}: invalid file specified <${content_file}>" 1>&2
+      exit 1
+    fi
 
-  if ! jq . "${content_file}" >/dev/null 2>&1; then
-    echo "ERROR:${0##*/}: not follow the JSON format <${content_file}>" 1>&2
-    exit 1
-  fi
-done
+    if ! jq . "${content_file}" >/dev/null 2>&1; then
+      echo "ERROR:${0##*/}: not follow the JSON format <${content_file}>" 1>&2
+      exit 1
+    fi
+  done
 
 #####################################################################
 # insert each data
 #####################################################################
 
 cat "${TEMP_LIST_FILE}" |
-while read -r content_file
-do
-  is_list=$(jq 'type == "array"' "${content_file}")
+  while read -r content_file; do
+    is_list=$(jq 'type == "array"' "${content_file}")
 
-  if [ "${is_list}" = 'true' ]; then
-    jq -c .[] "${content_file}"
-  else
-    jq -c "${content_file}"
-  fi |
+    if [ "${is_list}" = 'true' ]; then
+      jq -c .[] "${content_file}"
+    else
+      jq -c "${content_file}"
+    fi |
+      while read -r unit_data; do
+        printf '%s\n' "${unit_data}" >"${TEMP_UNITDATA_FILE}"
 
-  while read -r unit_data
-  do
-    printf '%s\n' "${unit_data}" >"${TEMP_UNITDATA_FILE}"
-
-    if ! "${BODY_SCRIPT}" ${OPT_DRYRUN} \
-         "${PROJECT_NAME}" "${PROJECT_VERSION}" "${DEVICE_NAME}" \
-         "${TEMP_UNITDATA_FILE}"; then
-      printf "ERROR:${0##*/}: insert failed <%s,%s>" \
-        "${content_file}" "${unit_data}" 1>&2
-      exit 1
-    fi
+        if ! "${BODY_SCRIPT}" ${OPT_DRYRUN} \
+          "${PROJECT_NAME}" "${PROJECT_VERSION}" "${DEVICE_NAME}" \
+          "${TEMP_UNITDATA_FILE}"; then
+          printf "ERROR:${0##*/}: insert failed <%s,%s>" \
+            "${content_file}" "${unit_data}" 1>&2
+          exit 1
+        fi
+      done
   done
-done

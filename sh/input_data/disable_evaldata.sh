@@ -5,8 +5,8 @@ set -u
 # help
 #####################################################################
 
-print_usage_and_exit () {
-  cat <<-USAGE 1>&2
+print_usage_and_exit() {
+  cat <<USAGE 1>&2
 Usage   : ${0##*/} <project name> <project version> <device name> <ID> <reason>
 Options : -s<serial>
 
@@ -29,23 +29,22 @@ opr_r=''
 opt_s='-1'
 
 i=1
-for arg in ${1+"$@"}
-do
+for arg in ${1+"$@"}; do
   case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
     -s*)                 opt_s="${arg#-s}"    ;;
     *)
-      if   [ $((i+4)) -eq $# ] && [ -z "${opr_p}" ]; then
+      if   [ $((i + 4)) -eq $# ] && [ -z "${opr_p}" ]; then
         opr_p="${arg}"
-      elif [ $((i+3)) -eq $# ] && [ -z "${opr_v}" ]; then
+      elif [ $((i + 3)) -eq $# ] && [ -z "${opr_v}" ]; then
         opr_v="${arg}"
-      elif [ $((i+2)) -eq $# ] && [ -z "${opr_n}" ]; then
+      elif [ $((i + 2)) -eq $# ] && [ -z "${opr_n}" ]; then
         opr_n="${arg}"
-      elif [ $((i+1)) -eq $# ] && [ -z "${opr_i}" ]; then
+      elif [ $((i + 1)) -eq $# ] && [ -z "${opr_i}" ]; then
         opr_i="${arg}"
-      elif [ $((i+0)) -eq $# ] && [ -z "${opr_r}" ]; then
+      elif [ $((i + 0)) -eq $# ] && [ -z "${opr_r}" ]; then
         opr_r="${arg}"
-       else
+      else
         echo "ERROR:${0##*/}: invalid args" 1>&2
         exit 1
       fi
@@ -97,7 +96,7 @@ SERIAL_NUM="${opt_s}"
 # common setting
 #####################################################################
 
-THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+THIS_DIR=$(dirname "$(realpath "$0")")
 SETTING_FILE="${THIS_DIR}/../enable_sh_setting.sh"
 
 if [ ! -f "${SETTING_FILE}" ]; then
@@ -113,7 +112,7 @@ fi
 
 DEVICE_SCHEMA_NAME="${COMMON_DEVICE_SCHEMA_PREFIX}_${DEVICE_NAME}_${COMMON_DEVICE_SCHEMA_SUFFIX}"
 
-THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+THIS_DIR=$(dirname "$(realpath "$0")")
 TOOL_DIR="${THIS_DIR}/../tool"
 GET_TABLE_NAME_BY_SERIAL="${TOOL_DIR}/get_table_name_by_serial.sh"
 GET_LAST_TABLE_NAME="${TOOL_DIR}/get_last_table_name.sh"
@@ -124,15 +123,14 @@ GET_LAST_TABLE_NAME="${TOOL_DIR}/get_last_table_name.sh"
 
 decomposed_ids=$(
   printf '%s\n' "${TARGET_IDS}" | tr ',' '\n' |
-  awk -F'-' '
-  NF == 1 { print; }
-  NF >  1 {
-    if ($1 < $2) { min = $1; max = $2; }
-    else         { min = $2; max = $1; }
-    for (i=min; i<=max; i++) { print i; }
-  }
-  ' |
-  sort -n | uniq
+    awk -F'-' '
+    NF == 1 { print; }
+    NF >  1 {
+      if ($1 < $2) { min = $1; max = $2; }
+      else         { min = $2; max = $1; }
+      for (i=min; i<=max; i++) { print i; }
+    }' |
+    sort -n | uniq
 )
 
 #####################################################################
@@ -167,8 +165,8 @@ abs_target_table_name="${DEVICE_SCHEMA_NAME}.${target_table_name}"
 
 comma_quote_ids=$(
   printf '%s\n' "${decomposed_ids}" |
-  sed 's!^!'"'"'!' | sed 's!$!'"'"'!' |
-  tr '\n' ',' | sed 's!,$!!'
+    sed 's!^!'"'"'!' | sed 's!$!'"'"'!' |
+    tr '\n' ',' | sed 's!,$!!'
 )
 
 target_content=$(
@@ -199,8 +197,7 @@ fi
 # disable target
 #####################################################################
 
-db_manage_table_command "
-  UPDATE ${abs_target_table_name}
-  SET (validity, free_description) = ('FALSE', '${DISABLE_REASON}')
-  WHERE measure_id IN (${comma_quote_ids});
-"
+db_manage_table_command \
+  "UPDATE ${abs_target_table_name}
+   SET (validity, free_description) = ('FALSE', '${DISABLE_REASON}')
+   WHERE measure_id IN (${comma_quote_ids});"

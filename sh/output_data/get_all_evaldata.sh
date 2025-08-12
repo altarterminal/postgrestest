@@ -5,8 +5,8 @@ set -u
 # help
 #####################################################################
 
-print_usage_and_exit () {
-  cat <<-USAGE 1>&2
+print_usage_and_exit() {
+  cat <<USAGE 1>&2
 Usage   : ${0##*/} <project name> <project version> <device name>
 Options : -c -j -s<serial number>  
 
@@ -31,19 +31,18 @@ opt_j='no'
 opt_s='-1'
 
 i=1
-for arg in ${1+"$@"}
-do
+for arg in ${1+"$@"}; do
   case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
     -c)                  opt_c='yes'          ;;
     -j)                  opt_j='yes'          ;;
     -s*)                 opt_s="${arg#-s}"    ;;
     *)
-      if   [ $((i+2)) -eq $# ] && [ -z "${opr_p}" ]; then
+      if   [ $((i + 2)) -eq $# ] && [ -z "${opr_p}" ]; then
         opr_p="${arg}"
-      elif [ $((i+1)) -eq $# ] && [ -z "${opr_v}" ]; then
+      elif [ $((i + 1)) -eq $# ] && [ -z "${opr_v}" ]; then
         opr_v="${arg}"
-      elif [ $((i+0)) -eq $# ] && [ -z "${opr_n}" ]; then
+      elif [ $((i + 0)) -eq $# ] && [ -z "${opr_n}" ]; then
         opr_n="${arg}"
       else
         echo "ERROR:${0##*/}: invalid args" 1>&2
@@ -77,7 +76,7 @@ SERIAL_NUM="${opt_s}"
 # common setting
 #####################################################################
 
-THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+THIS_DIR=$(dirname "$(realpath "$0")")
 SETTING_FILE="${THIS_DIR}/../enable_sh_setting.sh"
 
 if [ ! -f "${SETTING_FILE}" ]; then
@@ -99,7 +98,7 @@ REFER_ROLE_NAME="${COMMON_REFER_ROLE_NAME}"
 
 DEVICE_SCHEMA_NAME="${COMMON_DEVICE_SCHEMA_PREFIX}_${DEVICE_NAME}_${COMMON_DEVICE_SCHEMA_SUFFIX}"
 
-THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+THIS_DIR=$(dirname "$(realpath "$0")")
 TOOL_DIR="${THIS_DIR}/../tool"
 GET_TABLE_NAME_BY_SERIAL="${TOOL_DIR}/get_table_name_by_serial.sh"
 GET_LAST_TABLE_NAME="${TOOL_DIR}/get_last_table_name.sh"
@@ -135,23 +134,26 @@ abs_target_table_name="${DEVICE_SCHEMA_NAME}.${target_table_name}"
 #####################################################################
 
 if [ "${IS_JSON}" = 'yes' ]; then
-  result=$(psql "${DB_NAME}" \
-    -U "${REFER_ROLE_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" \
-    -t \
-    -c \
-    "SELECT to_json(${target_table_name})
-     FROM ${abs_target_table_name} WHERE validity = TRUE"
+  result=$(
+    psql "${DB_NAME}" \
+      -U "${REFER_ROLE_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" \
+      -t \
+      -c \
+      "SELECT to_json(${target_table_name})
+       FROM ${abs_target_table_name} WHERE validity = TRUE"
   )
 elif [ "${IS_CSV}" = 'yes' ]; then
-  result=$(psql "${DB_NAME}" \
-    -U "${REFER_ROLE_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" \
-    --csv \
-    -c "SELECT * FROM ${abs_target_table_name} WHERE validity = TRUE"
+  result=$(
+    psql "${DB_NAME}" \
+      -U "${REFER_ROLE_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" \
+      --csv \
+      -c "SELECT * FROM ${abs_target_table_name} WHERE validity = TRUE"
   )
 else
-  result=$(psql "${DB_NAME}" \
-    -U "${REFER_ROLE_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" \
-    -c "SELECT * FROM ${abs_target_table_name} WHERE validity = TRUE"
+  result=$(
+    psql "${DB_NAME}" \
+      -U "${REFER_ROLE_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" \
+      -c "SELECT * FROM ${abs_target_table_name} WHERE validity = TRUE"
   )
 fi
 

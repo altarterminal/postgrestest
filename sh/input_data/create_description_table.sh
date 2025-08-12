@@ -5,8 +5,8 @@ set -u
 # help
 #####################################################################
 
-print_usage_and_exit () {
-  cat <<-USAGE 1>&2
+print_usage_and_exit() {
+  cat <<USAGE 1>&2
 Usage   : ${0##*/} <device name> <file>
 Options : -d
 
@@ -26,15 +26,14 @@ opr_f=''
 opt_d='no'
 
 i=1
-for arg in ${1+"$@"}
-do
+for arg in ${1+"$@"}; do
   case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
     -d)                  opt_d='yes'          ;;
     *)
-      if   [ $((i+1)) -eq $# ] && [ -z "${opr_n}" ]; then
+      if   [ $((i + 1)) -eq $# ] && [ -z "${opr_n}" ]; then
         opr_n="${arg}"
-      elif [ $((i+0)) -eq $# ] && [ -z "${opr_f}" ]; then
+      elif [ $((i + 0)) -eq $# ] && [ -z "${opr_f}" ]; then
         opr_f="${arg}"
       else
         echo "ERROR:${0##*/}: invalid args" 1>&2
@@ -65,7 +64,7 @@ IS_DRYRUN="${opt_d}"
 # common setting
 #####################################################################
 
-THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+THIS_DIR=$(dirname "$(realpath "$0")")
 SETTING_FILE="${THIS_DIR}/../enable_sh_setting.sh"
 
 if [ ! -f "${SETTING_FILE}" ]; then
@@ -89,7 +88,7 @@ SCHEMA_NAME="${COMMON_DEVICE_SCHEMA_PREFIX}_${DEVICE_NAME}_${COMMON_DEVICE_SCHEM
 ABS_INPUT_DESC_TABLE_NAME="${SCHEMA_NAME}.${INPUT_DESC_TABLE_NAME}"
 ABS_OUTPUT_DESC_TABLE_NAME="${SCHEMA_NAME}.${OUTPUT_DESC_TABLE_NAME}"
 
-THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+THIS_DIR=$(dirname "$(realpath "$0")")
 PROJ_DIR="${THIS_DIR}/../.."
 INPUT_DESC_ITEM_JSON_FILE="${PROJ_DIR}/${COMMON_INPUT_DESC_ITEM_JSON_FILE}"
 OUTPUT_DESC_ITEM_JSON_FILE="${PROJ_DIR}/${COMMON_OUTPUT_DESC_ITEM_JSON_FILE}"
@@ -114,29 +113,27 @@ if [ -z "$(jq '.out // empty' "${JSON_FILE}")" ]; then
 fi
 
 #####################################################################
-# Create input description table
+# create input description table
 #####################################################################
 
 if db_refer_command '\dt '"${SCHEMA_NAME}"'.*' 2>/dev/null |
-   awk -F',' '{ print $2; }' | grep -q "^${INPUT_DESC_TABLE_NAME}$"
-then
+  awk -F',' '{ print $2; }' | grep -q "^${INPUT_DESC_TABLE_NAME}$"; then
   echo "INFO:${0##*/}: table already exists <${ABS_INPUT_DESC_TABLE_NAME}>" 1>&2
 else
   create_input_description_table_command=$(
-     jq -c '.[]' "${INPUT_DESC_ITEM_JSON_FILE}" |
-     while read -r line
-     do
-       input_name=$(printf '%s\n' "${line}" | jq -r '.name // empty')
-       input_type=$(printf '%s\n' "${line}" | jq -r '.type // empty')
+    jq -c '.[]' "${INPUT_DESC_ITEM_JSON_FILE}" |
+      while read -r line; do
+        input_name=$(printf '%s\n' "${line}" | jq -r '.name // empty')
+        input_type=$(printf '%s\n' "${line}" | jq -r '.type // empty')
 
-       printf '%s %s,\n' "${input_name}" "${input_type}"
-     done |
-     sed '$s!,$!!' |
-     {
-       echo "CREATE TABLE ${ABS_INPUT_DESC_TABLE_NAME} ("
-       cat
-       echo ');'
-     }
+        printf '%s %s,\n' "${input_name}" "${input_type}"
+      done |
+      sed '$s!,$!!' |
+      {
+        echo "CREATE TABLE ${ABS_INPUT_DESC_TABLE_NAME} ("
+        cat
+        echo ');'
+      }
   )
 
   db_manage_table_command "${create_input_description_table_command}"
@@ -150,25 +147,23 @@ fi
 #####################################################################
 
 if db_refer_command '\dt '"${SCHEMA_NAME}"'.*' 2>/dev/null |
-   awk -F',' '{ print $2; }' | grep -q "^${OUTPUT_DESC_TABLE_NAME}$"
-then
+  awk -F',' '{ print $2; }' | grep -q "^${OUTPUT_DESC_TABLE_NAME}$"; then
   echo "INFO:${0##*/}: table already exists <${ABS_OUTPUT_DESC_TABLE_NAME}>" 1>&2
 else
   create_output_description_table_command=$(
-     jq -c '.[]' "${OUTPUT_DESC_ITEM_JSON_FILE}" |
-     while read -r line
-     do
-       output_name=$(printf '%s\n' "${line}" | jq -r '.name // empty')
-       output_type=$(printf '%s\n' "${line}" | jq -r '.type // empty')
+    jq -c '.[]' "${OUTPUT_DESC_ITEM_JSON_FILE}" |
+      while read -r line; do
+        output_name=$(printf '%s\n' "${line}" | jq -r '.name // empty')
+        output_type=$(printf '%s\n' "${line}" | jq -r '.type // empty')
 
-       printf '%s %s,\n' "${output_name}" "${output_type}"
-     done |
-     sed '$s!,$!!' |
-     {
-       echo "CREATE TABLE ${ABS_OUTPUT_DESC_TABLE_NAME} ("
-       cat
-       echo ');'
-     }
+        printf '%s %s,\n' "${output_name}" "${output_type}"
+      done |
+      sed '$s!,$!!' |
+      {
+        echo "CREATE TABLE ${ABS_OUTPUT_DESC_TABLE_NAME} ("
+        cat
+        echo ');'
+      }
   )
 
   db_manage_table_command "${create_output_description_table_command}"
@@ -205,23 +200,22 @@ fi
 
 insert_input_command=$(
   jq '.in[]' -c "${JSON_FILE}" |
-  while read -r line
-  do
-    input_name=$(printf '%s\n' "${line}" | jq -r ".name // empty")
-    input_type=$(printf '%s\n' "${line}" | jq -r ".type // empty")
-    input_unit=$(printf '%s\n' "${line}" | jq -r ".unit // empty")
-    input_description=$(printf '%s\n' "${line}" | jq -r ".description // empty")
+    while read -r line; do
+      input_name=$(printf '%s\n' "${line}" | jq -r ".name // empty")
+      input_type=$(printf '%s\n' "${line}" | jq -r ".type // empty")
+      input_unit=$(printf '%s\n' "${line}" | jq -r ".unit // empty")
+      input_description=$(printf '%s\n' "${line}" | jq -r ".description // empty")
 
-    printf "('%s','%s','%s','%s'),"'\n' \
-      "${input_name}" "${input_type}" "${input_unit}" "${input_description}"
-  done |
-  sed '$s!,$!;!' |
-  {
-    echo "INSERT into ${ABS_INPUT_DESC_TABLE_NAME}"
-    echo '(input_name, input_type, input_unit, input_description)'
-    echo 'VALUES'
-    cat
-  }
+      printf "('%s','%s','%s','%s'),"'\n' \
+        "${input_name}" "${input_type}" "${input_unit}" "${input_description}"
+    done |
+    sed '$s!,$!;!' |
+    {
+      echo "INSERT into ${ABS_INPUT_DESC_TABLE_NAME}"
+      echo '(input_name, input_type, input_unit, input_description)'
+      echo 'VALUES'
+      cat
+    }
 )
 
 if [ "${IS_DRYRUN}" = 'yes' ]; then
@@ -265,23 +259,22 @@ fi
 
 insert_output_command=$(
   jq '.out[]' -c "${JSON_FILE}" |
-  while read -r line
-  do
-    output_name=$(printf '%s\n' "${line}" | jq -r ".name // empty")
-    output_type=$(printf '%s\n' "${line}" | jq -r ".type // empty")
-    output_unit=$(printf '%s\n' "${line}" | jq -r ".unit // empty")
-    output_description=$(printf '%s\n' "${line}" | jq -r ".description // empty")
+    while read -r line; do
+      output_name=$(printf '%s\n' "${line}" | jq -r ".name // empty")
+      output_type=$(printf '%s\n' "${line}" | jq -r ".type // empty")
+      output_unit=$(printf '%s\n' "${line}" | jq -r ".unit // empty")
+      output_description=$(printf '%s\n' "${line}" | jq -r ".description // empty")
 
-    printf "('%s','%s','%s','%s'),"'\n' \
-      "${output_name}" "${output_type}" "${output_unit}" "${output_description}"
-  done |
-  sed '$s!,$!;!' |
-  {
-    echo "INSERT into ${ABS_OUTPUT_DESC_TABLE_NAME}"
-    echo '(output_name, output_type, output_unit, output_description)'
-    echo 'VALUES'
-    cat
-  }
+      printf "('%s','%s','%s','%s'),"'\n' \
+        "${output_name}" "${output_type}" "${output_unit}" "${output_description}"
+    done |
+    sed '$s!,$!;!' |
+    {
+      echo "INSERT into ${ABS_OUTPUT_DESC_TABLE_NAME}"
+      echo '(output_name, output_type, output_unit, output_description)'
+      echo 'VALUES'
+      cat
+    }
 )
 
 if [ "${IS_DRYRUN}" = 'yes' ]; then

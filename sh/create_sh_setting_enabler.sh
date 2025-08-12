@@ -6,7 +6,7 @@ set -u
 #####################################################################
 
 print_usage_and_exit() {
-  cat <<-USAGE 1>&2
+  cat <<USAGE 1>&2
 Usage   : ${0##*/}
 Options :
 
@@ -19,8 +19,7 @@ USAGE
 # parameter
 #####################################################################
 
-for arg in ${1+"$@"}
-do
+for arg in ${1+"$@"}; do
   case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
     *)

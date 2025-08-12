@@ -5,8 +5,8 @@ set -u
 # help
 #####################################################################
 
-print_usage_and_exit () {
-  cat <<-USAGE 1>&2
+print_usage_and_exit() {
+  cat <<USAGE 1>&2
 Usage   : ${0##*/} <project name> <project version> <device name>
 Options : -i -o -s<serial number>  
 
@@ -32,19 +32,18 @@ opt_o='no'
 opt_s='-1'
 
 i=1
-for arg in ${1+"$@"}
-do
+for arg in ${1+"$@"}; do
   case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
     -i)                  opt_i='yes'          ;;
     -o)                  opt_o='yes'          ;;
     -s*)                 opt_s="${arg#-s}"    ;;
     *)
-      if   [ $((i+2)) -eq $# ] && [ -z "${opr_p}" ]; then
+      if   [ $((i + 2)) -eq $# ] && [ -z "${opr_p}" ]; then
         opr_p="${arg}"
-      elif [ $((i+1)) -eq $# ] && [ -z "${opr_v}" ]; then
+      elif [ $((i + 1)) -eq $# ] && [ -z "${opr_v}" ]; then
         opr_v="${arg}"
-      elif [ $((i+0)) -eq $# ] && [ -z "${opr_n}" ]; then
+      elif [ $((i + 0)) -eq $# ] && [ -z "${opr_n}" ]; then
         opr_n="${arg}"
       else
         echo "ERROR:${0##*/}: invalid args" 1>&2
@@ -82,7 +81,7 @@ SERIAL_NUM="${opt_s}"
 # common setting
 #####################################################################
 
-THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+THIS_DIR=$(dirname "$(realpath "$0")")
 SETTING_FILE="${THIS_DIR}/../enable_sh_setting.sh"
 
 if [ ! -f "${SETTING_FILE}" ]; then
@@ -96,7 +95,7 @@ fi
 # setting
 #####################################################################
 
-THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+THIS_DIR=$(dirname "$(realpath "$0")")
 GET_TABLE_NAME_BY_SERIAL="${THIS_DIR}/get_table_name_by_serial.sh"
 GET_LAST_TABLE_NAME="${THIS_DIR}/get_last_table_name.sh"
 
@@ -141,8 +140,7 @@ fi
 candidate_names=$(
   db_refer_command "
     SELECT ${COLUMN_NAME} FROM ${ABS_DESC_TABLE_NAME}
-    ORDER BY ${COLUMN_NAME}
-  "
+    ORDER BY ${COLUMN_NAME}"
 )
 exit_code=$?
 
@@ -155,8 +153,7 @@ table_column_names=$(
   db_refer_command "
     SELECT column_name FROM information_schema.columns
     WHERE table_name = '${target_table_name}'
-    ORDER BY column_name
-  "
+    ORDER BY column_name"
 )
 exit_code=$?
 
