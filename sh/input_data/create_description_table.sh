@@ -78,8 +78,6 @@ fi
 # setting
 #####################################################################
 
-REFER_ROLE_NAME="${COMMON_REFER_ROLE_NAME}"
-
 INPUT_DESC_TABLE_NAME="${COMMON_INPUT_DESC_TABLE_NAME}"
 OUTPUT_DESC_TABLE_NAME="${COMMON_OUTPUT_DESC_TABLE_NAME}"
 
@@ -137,9 +135,6 @@ else
   )
 
   db_manage_table_command "${create_input_description_table_command}"
-
-  db_manage_table_command \
-    "GRANT SELECT ON TABLE ${ABS_INPUT_DESC_TABLE_NAME} TO ${REFER_ROLE_NAME};"
 fi
 
 #####################################################################
@@ -167,9 +162,6 @@ else
   )
 
   db_manage_table_command "${create_output_description_table_command}"
-
-  db_manage_table_command \
-    "GRANT SELECT ON TABLE ${ABS_OUTPUT_DESC_TABLE_NAME} TO ${REFER_ROLE_NAME};"
 fi
 
 #####################################################################

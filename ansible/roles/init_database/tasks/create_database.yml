@@ -6,18 +6,6 @@
     port: "{{ db_port }}"
     login_user: "{{ admin_role_name }}"
 
-- name: Grant to read database
-  community.postgresql.postgresql_privs:
-    privs: CONNECT,TEMPORARY
-    objs: "{{ db_name }}"
-    type: database
-    roles: "{{ normal_role_names }}"
-    grant_option: true
-    login_host: "{{ db_host }}"
-    port: "{{ db_port }}"
-    login_user: "{{ admin_role_name }}"
-    login_db: "{{ db_name }}"
-
 - name: Grant to write database
   community.postgresql.postgresql_privs:
     privs: CREATE

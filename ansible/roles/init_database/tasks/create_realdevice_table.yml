@@ -11,19 +11,6 @@
     query_string: "[*].join(' ', [name, type])"
     realdevice_items: "{{ lookup('file', realdevice_item_file) | from_json | json_query(query_string) }}"
 
-- name: Grant to read realdevice table
-  community.postgresql.postgresql_privs:
-    privs: SELECT
-    schema: "{{ common_schema_name }}"
-    objs: "{{ realdevice_table_name }}"
-    type: table
-    roles: "{{ refer_role_name }}"
-    grant_option: true
-    login_host: "{{ db_host }}"
-    port: "{{ db_port }}"
-    login_user: "{{ manage_table_role_name }}"
-    login_db: "{{ db_name }}"
-
 - name: Insert init data into realdevice table
   community.postgresql.postgresql_query:
     query: |

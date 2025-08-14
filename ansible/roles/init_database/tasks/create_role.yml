@@ -33,3 +33,15 @@
     port: "{{ db_port }}"
     login_user: "{{ admin_role_name }}"
     login_db: "postgres"
+
+- name: Grant predifined read role
+  community.postgresql.postgresql_membership:
+    group: "pg_read_all_data"
+    target_roles:
+      - "{{ manage_schema_role_name }}"
+      - "{{ manage_table_role_name }}"
+      - "{{ refer_role_name }}"
+    login_host: "{{ db_host }}"
+    port: "{{ db_port }}"
+    login_user: "{{ admin_role_name }}"
+    login_db: "postgres"

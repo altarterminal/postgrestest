@@ -96,8 +96,6 @@ fi
 # setting
 #####################################################################
 
-REFER_ROLE_NAME="${COMMON_REFER_ROLE_NAME}"
-
 SCHEMA_NAME="${COMMON_DEVICE_SCHEMA_PREFIX}_${DEVICE_NAME}_${COMMON_DEVICE_SCHEMA_SUFFIX}"
 
 INPUT_DESC_TABLE_NAME="${COMMON_INPUT_DESC_TABLE_NAME}"
@@ -281,9 +279,6 @@ if [ "${IS_DRYRUN}" = 'yes' ]; then
   echo '~~~ Create Command to here'
 else
   db_manage_table_command "${make_table_command}"
-
-  db_manage_table_command \
-    "GRANT SELECT ON TABLE ${abs_next_table_name} TO ${REFER_ROLE_NAME};"
 
   printf '%s\n' "${abs_next_table_name}"
 fi

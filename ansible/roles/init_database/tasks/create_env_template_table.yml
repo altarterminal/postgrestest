@@ -10,16 +10,3 @@
   vars:
     query_string: "[*].join(' ', [name, type])"
     env_template_items: "{{ lookup('file', env_template_item_file) | from_json | json_query(query_string) }}"
-
-- name: Grant to read environment template table
-  community.postgresql.postgresql_privs:
-    privs: SELECT
-    schema: "{{ common_schema_name }}"
-    objs: "{{ env_template_table_name }}"
-    type: table
-    roles: "{{ refer_role_name }}"
-    grant_option: true
-    login_host: "{{ db_host }}"
-    port: "{{ db_port }}"
-    login_user: "{{ manage_table_role_name }}"
-    login_db: "{{ db_name }}"

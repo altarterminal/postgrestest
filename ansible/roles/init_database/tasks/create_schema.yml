@@ -7,18 +7,6 @@
     login_user: "{{ manage_schema_role_name }}"
     login_db: "{{ db_name }}"
 
-- name: Grant to read common schema
-  community.postgresql.postgresql_privs:
-    privs: USAGE
-    objs: "{{ common_schema_name }}"
-    type: schema
-    roles: "{{ manage_table_role_name }},{{ refer_role_name }}"
-    grant_option: true
-    login_host: "{{ db_host }}"
-    port: "{{ db_port }}"
-    login_user: "{{ manage_schema_role_name }}"
-    login_db: "{{ db_name }}"
-
 - name: Grant to write common schema
   community.postgresql.postgresql_privs:
     privs: CREATE
