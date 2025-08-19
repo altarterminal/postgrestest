@@ -7,29 +7,28 @@ postgres_data_dir: "/var/lib/postgresql/data"
 db_host: "{{ ansible_host }}"
 db_port: "{{ common_setting.COMMON_DB_PORT }}"
 
-image_item_file: "{{ project_dir }}/file/image_item.json"
-image_list_file: "{{ project_dir }}/file/image_list.json"
+image_item_file:        "{{ project_dir }}/file/image_item.json"
+image_list_file:        "{{ project_dir }}/file/image_list.json"
+realdevice_item_file:   "{{ project_dir }}/file/realdevice_item.json"
+realdevice_list_file:   "{{ project_dir }}/file/realdevice_list.json"
+env_template_item_file: "{{ project_dir }}/file/env_template_item.json"
 
-realdevice_item_file: "{{  project_dir }}/file/realdevice_item.json"
-realdevice_list_file: "{{  project_dir }}/file/realdevice_list.json"
-
-env_template_item_file: "{{  project_dir }}/file/env_template_item.json"
-
-db_name: "{{ common_setting.COMMON_DB_NAME }}"
-
-common_schema_name: "{{ common_setting.COMMON_COMMON_SCHEMA_NAME }}"
-
-admin_role_name:         "{{ common_setting.COMMON_ADMIN_ROLE_NAME }}"
+manage_db_role_name:     "{{ common_setting.COMMON_MANAGE_DB_ROLE_NAME }}"
 manage_schema_role_name: "{{ common_setting.COMMON_MANAGE_SCHEMA_ROLE_NAME }}"
 manage_table_role_name:  "{{ common_setting.COMMON_MANAGE_TABLE_ROLE_NAME }}"
 refer_role_name:         "{{ common_setting.COMMON_REFER_ROLE_NAME }}"
 
-normal_role_names: "{{ manage_schema_role_name }},{{ manage_table_role_name }},{{ refer_role_name }}"
+custom_role_names_csv: "{{ manage_db_role_name }},{{ manage_schema_role_name }},{{ manage_table_role_name }},{{ refer_role_name }}"
+custom_role_names_list:
+  - "{{ manage_db_role_name }}"
+  - "{{ manage_schema_role_name }}"
+  - "{{ manage_table_role_name }}"
+  - "{{ refer_role_name }}"
 
-image_table_name:      "{{ common_setting.COMMON_IMAGE_TABLE_NAME }}"
-realdevice_table_name: "{{ common_setting.COMMON_REALDEVICE_TABLE_NAME }}"
-
-env_template_table_name: "{{ common_setting.COMMON_ENV_TEMPLATE_TABLE_NAME }}"
-
+db_name:                       "{{ common_setting.COMMON_DB_NAME }}"
+common_schema_name:            "{{ common_setting.COMMON_COMMON_SCHEMA_NAME }}"
+image_table_name:              "{{ common_setting.COMMON_IMAGE_TABLE_NAME }}"
+realdevice_table_name:         "{{ common_setting.COMMON_REALDEVICE_TABLE_NAME }}"
+env_template_table_name:       "{{ common_setting.COMMON_ENV_TEMPLATE_TABLE_NAME }}"
 input_description_table_name:  "{{ common_setting.COMMON_INPUT_DESCRIPTION_TABLE_NAME }}"
 output_description_table_name: "{{ common_setting.COMMON_OUTPUT_DESCRIPTION_TABLE_NAME }}"

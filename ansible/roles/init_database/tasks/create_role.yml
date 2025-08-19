@@ -1,10 +1,11 @@
 ---
-- name: Create administrator role
+- name: Create manage db role
   community.postgresql.postgresql_user:
-    name: "{{ admin_role_name }}"
+    name: "{{ manage_db_role_name }}"
     role_attr_flags: "LOGIN,CREATEDB"
     login_host: "{{ db_host }}"
     login_port: "{{ db_port }}"
+    login_user: "postgres"
     login_db: "postgres"
 
 - name: Create manage schema role
@@ -36,7 +37,7 @@
 
 - name: Add grant privilege
   community.postgresql.postgresql_privs:
-    roles: "{{ manage_schema_role_name }},{{ manage_table_role_name }},{{ refer_role_name }}"
+    roles: "{{ custom_role_names_csv }}"
     type: "group"
     objs: "pg_read_all_data"
     grant_option: true
@@ -48,10 +49,7 @@
 - name: Grant predifined read role
   community.postgresql.postgresql_membership:
     group: "pg_read_all_data"
-    target_roles:
-      - "{{ manage_schema_role_name }}"
-      - "{{ manage_table_role_name }}"
-      - "{{ refer_role_name }}"
+    target_roles: "{{ custom_role_names_list }}"
     login_host: "{{ db_host }}"
     login_port: "{{ db_port }}"
     login_user: "postgres"

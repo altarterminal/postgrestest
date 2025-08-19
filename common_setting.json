@@ -17,7 +17,7 @@
   "COMMON_DEVICE_SCHEMA_PREFIX": "device",
   "COMMON_DEVICE_SCHEMA_SUFFIX": "schema",
 
-  "COMMON_ADMIN_ROLE_NAME":         "admin_role",
+  "COMMON_MANAGE_DB_ROLE_NAME":     "manage_db_role",
   "COMMON_MANAGE_SCHEMA_ROLE_NAME": "manage_schema_role",
   "COMMON_MANAGE_TABLE_ROLE_NAME":  "manage_table_role",
   "COMMON_REFER_ROLE_NAME":         "refer_role",
