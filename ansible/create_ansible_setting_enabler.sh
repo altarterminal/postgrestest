@@ -5,12 +5,17 @@ set -u
 # help
 #####################################################################
 
+THIS_DIR=$(dirname "$(realpath "$0")")
+
 print_usage_and_exit() {
   cat <<-USAGE 1>&2
 Usage   : ${0##*/}
-Options :
+Options : -k<key dir> -o<setting enabler file>
 
 Check the environment of execution and create required files.
+
+-k: Specify the directory in which keys are (default: ${THIS_DIR}/key)
+-o: Specify the file to enable setting (default: ${THIS_DIR}/enable_ansible_setting.sh)
 USAGE
   exit 1
 }
@@ -19,10 +24,15 @@ USAGE
 # parameter
 #####################################################################
 
+opt_k="${THIS_DIR}/key"
+opt_o="${THIS_DIR}/enable_ansible_setting.sh"
+
 for arg in ${1+"$@"}
 do
   case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
+    -k*)                 opt_k="${arg#-k}"    ;;
+    -o*)                 opt_o="${arg#-o}"    ;;
     *)
       echo "ERROR:${0##*/}: invalid args" 1>&2
       exit 1
@@ -30,28 +40,21 @@ do
   esac
 done
 
-#####################################################################
-# common setting
-#####################################################################
-
-THIS_DIR=$(dirname "$(realpath "$0")")
-TOP_DIR=$(dirname "${THIS_DIR}")
-
-SETTING_FILE="${TOP_DIR}/common_setting.json"
-
-if [ ! -f "${SETTING_FILE}" ]; then
-  echo "ERROR:${0##*/}: setting file not found <${SETTING_FILE}>" 1>&2
-  exit 1
-fi
+KEY_DIR="${opt_k}"
+ENABLER_FILE="${opt_o}"
 
 #####################################################################
 # setting
 #####################################################################
 
-KEY_DIR="${THIS_DIR}/key"
+TOP_DIR=$(dirname "${THIS_DIR}")
+
+SETTING_FILE="${TOP_DIR}/common_setting.json"
+
 FILES_DIR="${THIS_DIR}/roles/setup_virt_env/files"
 
 CONFIG_FILE="${THIS_DIR}/ansiblg.cfg"
+
 SEC_KEY_FILE="${KEY_DIR}/id_rsa"
 PUB_KEY_FILE="${KEY_DIR}/id_rsa.pub"
 
@@ -61,8 +64,6 @@ HOST_VER_DIR="${THIS_DIR}/host_vars"
 BARE_SETTING_FILE="${HOST_VER_DIR}/bare_host.yml"
 VIRT_SETTING_FILE="${HOST_VER_DIR}/virt_host.yml"
 
-ENABLER_FILE="${THIS_DIR}/enable_ansible_setting.sh"
-
 #####################################################################
 # check local tool
 #####################################################################
@@ -71,6 +72,24 @@ if ! type jq >/dev/null 2>&1; then
   echo "ERROR:${0##*/}: jq command not found" 1>&2
   exit 1
 fi
+
+#####################################################################
+# check setting file
+#####################################################################
+
+if [ ! -f "${SETTING_FILE}" ]; then
+  echo "ERROR:${0##*/}: setting file not found <${SETTING_FILE}>" 1>&2
+  exit 1
+fi
+
+if ! jq . "${SETTING_FILE}" >/dev/null 2>&1; then
+  echo "ERROR:${0##*/}: invalid file for JSON <${SETTING_FILE}>" 1>&2
+  exit 1
+fi
+
+#####################################################################
+# check required tool
+#####################################################################
 
 if ! type ansible >/dev/null 2>&1; then
   echo "ERROR:${0##*/}: ansible command not found" 1>&2

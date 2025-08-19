@@ -5,12 +5,16 @@ set -u
 # help
 #####################################################################
 
+THIS_DIR=$(dirname "$(realpath "$0")")
+
 print_usage_and_exit() {
   cat <<USAGE 1>&2
 Usage   : ${0##*/}
-Options :
+Options : -o<setting enabler file>
 
 Check the environment of execution and create required files.
+
+-o: Specify the file to enable setting (default: ${THIS_DIR}/enable_sh_setting.sh)
 USAGE
   exit 1
 }
@@ -18,10 +22,13 @@ USAGE
 #####################################################################
 # parameter
 #####################################################################
+ 
+opt_o="${THIS_DIR}/enable_sh_setting.sh" 
 
 for arg in ${1+"$@"}; do
   case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
+    -o*)                 opt_o="${arg#-o}"    ;;
     *)
       echo "ERROR:${0##*/}: invalid args" 1>&2
       exit 1
@@ -29,18 +36,18 @@ for arg in ${1+"$@"}; do
   esac
 done
 
+ENABLER_FILE="${opt_o}"
+
 #####################################################################
 # setting
 #####################################################################
 
-THIS_DIR="$(dirname "$(realpath "$0")")"
 TOP_DIR="$(dirname "${THIS_DIR}")"
 
 SETTING_FILE="${TOP_DIR}/common_setting.json"
-ENABLER_FILE="${THIS_DIR}/enable_sh_setting.sh"
 
 #####################################################################
-# check
+# check required tool
 #####################################################################
 
 if ! type jq >/dev/null 2>&1; then
@@ -53,8 +60,17 @@ if ! type psql >/dev/null 2>&1; then
   exit 1
 fi
 
+#####################################################################
+# check setting file
+#####################################################################
+
 if [ ! -f "${SETTING_FILE}" ]; then
   echo "ERROR:${0##*/}: setting file not found <${SETTING_FILE}" 1>&2
+  exit 1
+fi
+
+if ! jq . "${SETTING_FILE}" >/dev/null 2>&1; then
+  echo "ERROR:${0##*/}: invalid file for JSON <${SETTING_FILE}>" 1>&2
   exit 1
 fi
 
