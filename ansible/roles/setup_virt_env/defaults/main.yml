@@ -1,2 +1,4 @@
 ---
 proxy_setting: "{{ common_setting.COMMON_PROXY}}"
+
+dockernet_ip: "{{ common_setting.COMMON_VIRT_NET }}"

@@ -1,4 +1,8 @@
 ---
+- name: Import setup package manager proxy
+  ansible.builtin.import_tasks: ./setup_package_manager_proxy.yml
+  tags: setup_package_manager_proxy
+
 - name: Import install install dependency
   ansible.builtin.import_tasks: ./install_install_dependency.yml
   tags: install_install_dependency

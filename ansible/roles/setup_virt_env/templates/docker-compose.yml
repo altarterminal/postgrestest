@@ -14,7 +14,16 @@ services:
       - type: bind
         source: "{{ share_dir_on_baremetal }}"
         target: "{{ share_dir_on_container }}"
+    networks:
+      db_network:
 
 volumes:
   db_volume:
     name: db_volume
+
+networks:
+  db_network:
+    ipam:
+      driver: default
+      config:
+        - subnet: "{{ dockernet_ip }}"
