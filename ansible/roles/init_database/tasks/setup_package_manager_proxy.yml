@@ -1,0 +1,27 @@
+---
+- name: Set pip proxy
+  ansible.builtin.blockinfile:
+    path: "/etc/pip.conf"
+    block: |
+      [global]
+      proxy = http://{{ proxy_setting }}
+    create: true
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  when: proxy_setting | length > 0
+
+# The apt proxy has already been set on Dockerfile
+# - name: Set apt proxy
+#   ansible.builtin.blockinfile:
+#     path: "/etc/apt/apt.conf"
+#     block: |
+#       Acquire::http::Proxy "http://{{ proxy_setting }}";
+#       Acquire::https::Proxy "http://{{ proxy_setting }}";
+#     create: true
+#     owner: root
+#     group: root
+#     mode: "0644"
+#   become: true
+#   when: proxy_setting | length > 0

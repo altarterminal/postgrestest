@@ -11,7 +11,7 @@
     owner: "{{ user_name }}"
     group: "{{ user_name }}"
     mode: "0644"
-    use_proxy: "{{ proxy_setting | length }} > 0"
+    use_proxy: "{{ proxy_setting != '' }}"
   environment:
     http_proxy: "http://{{ proxy_setting }}"
     https_proxy: "http://{{ proxy_setting }}"
