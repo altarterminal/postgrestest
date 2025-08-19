@@ -2,7 +2,7 @@
 - name: Create administrator role
   community.postgresql.postgresql_user:
     name: "{{ admin_role_name }}"
-    role_attr_flags: "LOGIN,CREATEDB,CREATEROLE"
+    role_attr_flags: "LOGIN,CREATEDB"
     login_host: "{{ db_host }}"
     login_port: "{{ db_port }}"
     login_db: "postgres"
@@ -13,7 +13,7 @@
     role_attr_flags: "LOGIN"
     login_host: "{{ db_host }}"
     login_port: "{{ db_port }}"
-    login_user: "{{ admin_role_name }}"
+    login_user: "postgres"
     login_db: "postgres"
 
 - name: Create manage table role
@@ -22,7 +22,7 @@
     role_attr_flags: "LOGIN"
     login_host: "{{ db_host }}"
     login_port: "{{ db_port }}"
-    login_user: "{{ admin_role_name }}"
+    login_user: "postgres"
     login_db: "postgres"
 
 - name: Create refer role
@@ -31,7 +31,7 @@
     role_attr_flags: "LOGIN"
     login_host: "{{ db_host }}"
     login_port: "{{ db_port }}"
-    login_user: "{{ admin_role_name }}"
+    login_user: "postgres"
     login_db: "postgres"
 
 - name: Grant predifined read role
@@ -43,5 +43,5 @@
       - "{{ refer_role_name }}"
     login_host: "{{ db_host }}"
     login_port: "{{ db_port }}"
-    login_user: "{{ admin_role_name }}"
+    login_user: "postgres"
     login_db: "postgres"
