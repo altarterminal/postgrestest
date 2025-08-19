@@ -4,7 +4,7 @@
     name: "{{ admin_role_name }}"
     role_attr_flags: "LOGIN,CREATEDB,CREATEROLE"
     login_host: "{{ db_host }}"
-    port: "{{ db_port }}"
+    login_port: "{{ db_port }}"
     login_db: "postgres"
 
 - name: Create manage schema role
@@ -12,7 +12,7 @@
     name: "{{ manage_schema_role_name }}"
     role_attr_flags: "LOGIN"
     login_host: "{{ db_host }}"
-    port: "{{ db_port }}"
+    login_port: "{{ db_port }}"
     login_user: "{{ admin_role_name }}"
     login_db: "postgres"
 
@@ -21,7 +21,7 @@
     name: "{{ manage_table_role_name }}"
     role_attr_flags: "LOGIN"
     login_host: "{{ db_host }}"
-    port: "{{ db_port }}"
+    login_port: "{{ db_port }}"
     login_user: "{{ admin_role_name }}"
     login_db: "postgres"
 
@@ -30,7 +30,7 @@
     name: "{{ refer_role_name }}"
     role_attr_flags: "LOGIN"
     login_host: "{{ db_host }}"
-    port: "{{ db_port }}"
+    login_port: "{{ db_port }}"
     login_user: "{{ admin_role_name }}"
     login_db: "postgres"
 
@@ -42,6 +42,6 @@
       - "{{ manage_table_role_name }}"
       - "{{ refer_role_name }}"
     login_host: "{{ db_host }}"
-    port: "{{ db_port }}"
+    login_port: "{{ db_port }}"
     login_user: "{{ admin_role_name }}"
     login_db: "postgres"

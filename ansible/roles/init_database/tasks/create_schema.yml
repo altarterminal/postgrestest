@@ -3,7 +3,7 @@
   community.postgresql.postgresql_schema:
     name: "{{ common_schema_name }}"
     login_host: "{{ db_host }}"
-    port: "{{ db_port }}"
+    login_port: "{{ db_port }}"
     login_user: "{{ manage_schema_role_name }}"
     login_db: "{{ db_name }}"
 
@@ -15,6 +15,6 @@
     roles: "{{ manage_table_role_name }}"
     grant_option: true
     login_host: "{{ db_host }}"
-    port: "{{ db_port }}"
+    login_port: "{{ db_port }}"
     login_user: "{{ manage_schema_role_name }}"
     login_db: "{{ db_name }}"

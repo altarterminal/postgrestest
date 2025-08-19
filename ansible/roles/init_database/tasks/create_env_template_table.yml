@@ -4,9 +4,9 @@
     name: "{{ common_schema_name }}.{{ env_template_table_name }}"
     columns: "{{ env_template_items }}"
     login_host: "{{ db_host }}"
-    port: "{{ db_port }}"
-    login_db: "{{ db_name }}"
+    login_port: "{{ db_port }}"
     login_user: "{{ manage_table_role_name }}"
+    login_db: "{{ db_name }}"
   vars:
     query_string: "[*].join(' ', [name, type])"
     env_template_items: "{{ lookup('file', env_template_item_file) | from_json | json_query(query_string) }}"

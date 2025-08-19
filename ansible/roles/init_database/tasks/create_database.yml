@@ -3,7 +3,7 @@
   community.postgresql.postgresql_db:
     name: "{{ db_name }}"
     login_host: "{{ db_host }}"
-    port: "{{ db_port }}"
+    login_port: "{{ db_port }}"
     login_user: "{{ admin_role_name }}"
 
 - name: Grant to write database
@@ -14,6 +14,6 @@
     roles: "{{ manage_schema_role_name }}"
     grant_option: true
     login_host: "{{ db_host }}"
-    port: "{{ db_port }}"
+    login_port: "{{ db_port }}"
     login_user: "{{ admin_role_name }}"
     login_db: "{{ db_name }}"
