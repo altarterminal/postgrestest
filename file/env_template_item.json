@@ -1,0 +1,7 @@
+[
+  { "name": "env_template_id",   "type": "SERIAL"     },
+  { "name": "project_name",      "type": "TEXT"       },
+  { "name": "project_version",   "type": "TEXT"       },
+  { "name": "image_md5sum",      "type": "VARCHAR(32)"},
+  { "name": "realdevice_serial", "type": "VARCHAR(8)" }
+]
