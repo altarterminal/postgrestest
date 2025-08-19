@@ -1,4 +1,6 @@
 ---
+proxy_setting: "{{ common_setting.COMMON_PROXY }}"
+
 localhost_ip: "127.0.0.1/24"
 localnet_ip:  "{{ common_setting.COMMON_DB_NET }}"
 dockernet_ip: "{{ common_setting.COMMON_VIRT_NET }}"
