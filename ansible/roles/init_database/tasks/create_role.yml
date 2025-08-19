@@ -34,6 +34,17 @@
     login_user: "postgres"
     login_db: "postgres"
 
+- name: Add grant privilege
+  community.postgresql.postgresql_privs:
+    roles: "{{ manage_schema_role_name }},{{ manage_table_role_name }},{{ refer_role_name }}"
+    type: "group"
+    objs: "pg_read_all_data"
+    grant_option: true
+    login_host: "{{ db_host }}"
+    login_port: "{{ db_port }}"
+    login_user: "postgres"
+    login_db: "postgres"
+
 - name: Grant predifined read role
   community.postgresql.postgresql_membership:
     group: "pg_read_all_data"
