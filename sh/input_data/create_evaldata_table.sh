@@ -105,6 +105,7 @@ ABS_INPUT_DESC_TABLE_NAME="${SCHEMA_NAME}.${INPUT_DESC_TABLE_NAME}"
 ABS_OUTPUT_DESC_TABLE_NAME="${SCHEMA_NAME}.${OUTPUT_DESC_TABLE_NAME}"
 
 EVALDATA_TABLE_PREFIX="${COMMON_EVALDATA_TABLE_PREFIX}"
+EVALDATA_TABLE_SUFFIX="${COMMON_EVALDATA_TABLE_SUFFIX}"
 
 THIS_DIR=$(dirname "$(realpath "$0")")
 
@@ -217,10 +218,10 @@ prev_serial_num=$(
 next_serial_num=$((prev_serial_num + 1))
 
 next_table_name=$(
-  printf '%s_%s_%s_%s_%02d\n' \
+  printf '%s_%s_%s_%s_%02d_%s\n' \
     "${EVALDATA_TABLE_PREFIX}" \
     "${PROJECT_NAME}" "${PROJECT_VERSION}" "${DEVICE_NAME}" \
-    "${next_serial_num}"
+    "${next_serial_num}" "${EVALDATA_TABLE_SUFFIX}"
 )
 
 abs_next_table_name="${SCHEMA_NAME}.${next_table_name}"

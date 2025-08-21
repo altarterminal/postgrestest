@@ -29,6 +29,7 @@
   "COMMON_OUTPUT_DESC_TABLE_NAME":  "output_description_table",
 
   "COMMON_EVALDATA_TABLE_PREFIX": "eval",
+  "COMMON_EVALDATA_TABLE_SUFFIX": "table",
 
   "COMMON_COMMON_ITEM_JSON_FILE":       "file/common_item.json",
   "COMMON_IMAGE_ITEM_JSON_FILE":        "file/image_item.json",

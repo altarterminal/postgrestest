@@ -78,10 +78,10 @@ fi
 DEVICE_SCHEMA_NAME="${COMMON_DEVICE_SCHEMA_PREFIX}_${DEVICE_NAME}_${COMMON_DEVICE_SCHEMA_SUFFIX}"
 
 EVALDATA_TABLE_NAME=$(
-  printf '%s_%s_%s_%s_%02d\n' \
+  printf '%s_%s_%s_%s_%02d_%s\n' \
     "${COMMON_EVALDATA_TABLE_PREFIX}" \
     "${PROJECT_NAME}" "${PROJECT_VERSION}" "${DEVICE_NAME}" \
-    "${SERIAL_NUM##0}"
+    "${SERIAL_NUM##0}" "${COMMON_EVALDATA_TABLE_SUFFIX}"
 )
 
 #####################################################################
