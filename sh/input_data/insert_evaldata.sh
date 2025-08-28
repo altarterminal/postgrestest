@@ -10,15 +10,19 @@ print_usage_and_exit() {
 Usage   : ${0##*/} <project name> <project version> <device name> <file>
 Options : -l
 
-Insert an evaluation data into the table.
+Insert evaluation data into the table.
 Specify '-' to <file> if its content will be input from standard input.
 
 Command line sample:
-  - ${0##*/} myproj myver mydev evaldata.json
-  - cat evaldata.json | ${0##*/} myproj myver mydev -
-  - ${0##*/} -l myproj myver mydev evaldata_filelist.txt
-  - cat evaldata_filelist.json | ${0##*/} myproj myver mydev -
-  # evaldata.json can include multiple data in form of json-array.
+  - input evaldata
+    - ${0##*/} myproj myver mydev evaldata.json
+    - cat evaldata.json | ${0##*/} myproj myver mydev -
+  - input list of evaldata file
+    - ${0##*/} -l myproj myver mydev evaldata_filelist.txt
+    - cat evaldata_filelist.txt | ${0##*/} myproj myver mydev -
+
+Note.
+  - evaldata.json can include multiple data in form of json's array.
 
 -l: Specify the evaldata-file-name's list instead of evaldata-file.
 -d: Enable dry-run (only judge whether you can insert the data).
