@@ -116,6 +116,25 @@ PROJ_DIR="${THIS_DIR}/../.."
 COMMON_ITEM_JSON_FILE="${PROJ_DIR}/${COMMON_COMMON_ITEM_JSON_FILE}"
 
 #####################################################################
+# check each name
+#####################################################################
+
+if ! printf '%s\n' "${PROJECT_NAME}" | grep -Eq '^[a-z0-9_]+$'; then
+  echo "ERROR:${0##*/}: invalid project name <${PROJECT_NAME}>" 1>&2
+  exit 1
+fi
+
+if ! printf '%s\n' "${PROJECT_VERSION}" | grep -Eq '^[a-z0-9_]+$'; then
+  echo "ERROR:${0##*/}: invalid project version <${PROJECT_VERSION}>" 1>&2
+  exit 1
+fi
+
+if ! printf '%s\n' "${DEVICE_NAME}" | grep -Eq '^[a-z0-9_]+$'; then
+  echo "ERROR:${0##*/}: invalid device name <${DEVICE_NAME}>" 1>&2
+  exit 1
+fi
+
+#####################################################################
 # check json
 #####################################################################
 
