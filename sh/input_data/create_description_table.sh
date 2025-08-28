@@ -174,7 +174,7 @@ old_input_names=$(
      ORDER BY input_name;"
 )
 
-new_input_names=$(jq -r '.in.[].name' "${JSON_FILE}" | sort)
+new_input_names=$(jq -r '.in[].name' "${JSON_FILE}" | sort)
 
 only_old_input_names=$(
   join -1 1 -2 1 -v 1 \
@@ -233,7 +233,7 @@ old_output_names=$(
      ORDER BY output_name;"
 )
 
-new_output_names=$(jq -r ".out.[].name" "${JSON_FILE}" | sort)
+new_output_names=$(jq -r ".out[].name" "${JSON_FILE}" | sort)
 
 only_old_output_names=$(
   join -1 1 -2 1 -v 1 \
