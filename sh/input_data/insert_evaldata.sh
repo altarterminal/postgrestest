@@ -141,7 +141,7 @@ trap '
   [ -e ${TEMP_CONTENT_FILE} ] && rm ${TEMP_CONTENT_FILE}
   [ -e ${TEMP_LIST_FILE} ] && rm ${TEMP_LIST_FILE}
   [ -e ${TEMP_UNITDATA_FILE} ] && rm ${TEMP_UNITDATA_FILE}
-'
+' EXIT
 
 #####################################################################
 # prepare
@@ -184,9 +184,9 @@ cat "${TEMP_LIST_FILE}" |
     is_list=$(jq 'type == "array"' "${content_file}")
 
     if [ "${is_list}" = 'true' ]; then
-      jq -c .[] "${content_file}"
+      jq -c '.[]' "${content_file}"
     else
-      jq -c "${content_file}"
+      jq -c '.' "${content_file}"
     fi |
       while read -r unit_data; do
         printf '%s\n' "${unit_data}" >"${TEMP_UNITDATA_FILE}"
