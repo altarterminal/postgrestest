@@ -28,7 +28,7 @@ i=1
 for arg in ${1+"$@"}; do
   case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
-    -c*)                 opt_c="${arg#-c}"    ;;
+    -c)                  opt_c='yes'          ;;
     *)
       if [ $i -eq $# ] && [ -z "${opr}" ]; then
         opr="${arg}"
