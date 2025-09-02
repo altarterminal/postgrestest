@@ -5,3 +5,6 @@
       - requests==2.31.0
       - docker
       - docker-compose
+  environment:
+    http_proxy: "http://{{ proxy_setting }}"
+    https_proxy: "http://{{ proxy_setting }}"
