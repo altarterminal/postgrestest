@@ -56,8 +56,8 @@ if ! printf '%s\n' "${opr_p}" | grep -Eq '^[A-Za-z0-9_]+$'; then
   exit 1
 fi
 
-if ! printf '%s\n' "${opr_p}" | grep -Eq '^[A-Za-z0-9_]+$'; then
-  echo "error:${0##*/}: invalid project version specified <${opr_p}>" 1>&2
+if ! printf '%s\n' "${opr_v}" | grep -Eq '^[A-Za-z0-9_]+$'; then
+  echo "error:${0##*/}: invalid project version specified <${opr_v}>" 1>&2
   exit 1
 fi
 
