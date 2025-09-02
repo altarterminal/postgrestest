@@ -51,17 +51,17 @@ for arg in ${1+"$@"}; do
   i=$((i + 1))
 done
 
-if ! printf '%s\n' "${opr_p}" | grep -Eq '^[A-Za-z0-9_]+$'; then
+if ! printf '%s\n' "${opr_p}" | grep -Eq '^[a-z0-9_]+$'; then
   echo "ERROR:${0##*/}: invalid project name specified <${opr_p}>" 1>&2
   exit 1
 fi
 
-if ! printf '%s\n' "${opr_v}" | grep -Eq '^[A-Za-z0-9_]+$'; then
+if ! printf '%s\n' "${opr_v}" | grep -Eq '^[a-z0-9_]+$'; then
   echo "error:${0##*/}: invalid project version specified <${opr_v}>" 1>&2
   exit 1
 fi
 
-if ! printf '%s\n' "${opr_n}" | grep -Eq '^[A-Za-z0-9_]+$'; then
+if ! printf '%s\n' "${opr_n}" | grep -Eq '^[a-z0-9_]+$'; then
   echo "error:${0##*/}: invalid device name specified <${opr_n}>" 1>&2
   exit 1
 fi
@@ -114,25 +114,6 @@ GET_LAST_TABLE_NAME="${TOOL_DIR}/get_last_table_name.sh"
 
 PROJ_DIR="${THIS_DIR}/../.."
 COMMON_ITEM_JSON_FILE="${PROJ_DIR}/${COMMON_COMMON_ITEM_JSON_FILE}"
-
-#####################################################################
-# check each name
-#####################################################################
-
-if ! printf '%s\n' "${PROJECT_NAME}" | grep -Eq '^[a-z0-9_]+$'; then
-  echo "ERROR:${0##*/}: invalid project name <${PROJECT_NAME}>" 1>&2
-  exit 1
-fi
-
-if ! printf '%s\n' "${PROJECT_VERSION}" | grep -Eq '^[a-z0-9_]+$'; then
-  echo "ERROR:${0##*/}: invalid project version <${PROJECT_VERSION}>" 1>&2
-  exit 1
-fi
-
-if ! printf '%s\n' "${DEVICE_NAME}" | grep -Eq '^[a-z0-9_]+$'; then
-  echo "ERROR:${0##*/}: invalid device name <${DEVICE_NAME}>" 1>&2
-  exit 1
-fi
 
 #####################################################################
 # check json
