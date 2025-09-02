@@ -38,8 +38,8 @@ for arg in ${1+"$@"}; do
   i=$((i + 1))
 done
 
-if [ -z "${opr}" ]; then
-  echo "ERROR:${0##*/}: device name must be specified" 1>&2
+if ! printf '%s\n' "${opr}" | grep -Eq '^[A-Za-z0-9_]+$'; then
+  echo "ERROR:${0##*/}: invalid device name specified <${opr}>" 1>&2
   exit 1
 fi
 

@@ -51,18 +51,18 @@ for arg in ${1+"$@"}; do
   i=$((i + 1))
 done
 
-if [ -z "${opr_p}" ]; then
-  echo "ERROR:${0##*/}: project name must be specified" 1>&2
+if ! printf '%s\n' "${opr_p}" | grep -Eq '^[A-Za-z0-9_]+$'; then
+  echo "ERROR:${0##*/}: invalid project name specified <${opr_p}>" 1>&2
   exit 1
 fi
 
-if [ -z "${opr_v}" ]; then
-  echo "error:${0##*/}: project version must be specified" 1>&2
+if ! printf '%s\n' "${opr_p}" | grep -Eq '^[A-Za-z0-9_]+$'; then
+  echo "error:${0##*/}: invalid project version specified <${opr_p}>" 1>&2
   exit 1
 fi
 
-if [ -z "${opr_n}" ]; then
-  echo "error:${0##*/}: device name must be specified" 1>&2
+if ! printf '%s\n' "${opr_n}" | grep -Eq '^[A-Za-z0-9_]+$'; then
+  echo "error:${0##*/}: invalid device name specified <${opr_n}>" 1>&2
   exit 1
 fi
 
