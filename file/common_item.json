@@ -1,5 +1,6 @@
 [
   { "name": "measure_id",           "type": "SERIAL"},
+  { "name": "measure_group_id",     "type": "INTEGER"},
   { "name": "measure_date",         "type": "TIMESTAMP"},
   { "name": "measurer_mail",        "type": "TEXT"},
   { "name": "image_id",             "type": "INTEGER"},

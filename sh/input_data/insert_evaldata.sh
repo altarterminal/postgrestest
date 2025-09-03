@@ -23,6 +23,7 @@ Command line sample:
 
 Note.
   - evaldata.json can include multiple data in form of json's array.
+  - if multiple data are inserted, the measure_group_id of them will be the same.
 
 -l: Specify the evaldata-file-name's list instead of evaldata-file.
 -d: Enable dry-run (only judge whether you can insert the data).
@@ -125,6 +126,7 @@ BODY_SCRIPT="${THIS_DIR}/insert_evaldata_body.sh"
 THIS_DATE=$(date '+%Y%m%d_%H%M%S')
 TEMP_CONTENT_NAME="${TMPDIR:-/tmp}/${0##*/}_${THIS_DATE}_content_XXXXXX"
 TEMP_LIST_NAME="${TMPDIR:-/tmp}/${0##*/}_${THIS_DATE}_list_XXXXXX"
+TEMP_ACC_NAME="${TMPDIR:-/tmp}/${0##*/}_${THIS_DATE}_acc_XXXXXX"
 TEMP_UNITDATA_NAME="${TMPDIR:-/tmp}/${0##*/}_${THIS_DATE}_unitdata_XXXXXX"
 
 if [ "${IS_DRYRUN}" = 'yes' ]; then
@@ -139,11 +141,13 @@ fi
 
 TEMP_CONTENT_FILE="$(mktemp "${TEMP_CONTENT_NAME}")"
 TEMP_LIST_FILE="$(mktemp "${TEMP_LIST_NAME}")"
+TEMP_ACC_FILE="$(mktemp "${TEMP_ACC_NAME}")"
 TEMP_UNITDATA_FILE="$(mktemp "${TEMP_UNITDATA_NAME}")"
 
 trap '
   [ -e ${TEMP_CONTENT_FILE} ] && rm ${TEMP_CONTENT_FILE}
   [ -e ${TEMP_LIST_FILE} ] && rm ${TEMP_LIST_FILE}
+  [ -e ${TEMP_ACC_FILE} ] && rm ${TEMP_ACC_FILE}
   [ -e ${TEMP_UNITDATA_FILE} ] && rm ${TEMP_UNITDATA_FILE}
 ' EXIT
 
@@ -180,8 +184,10 @@ cat "${TEMP_LIST_FILE}" |
   done
 
 #####################################################################
-# insert each data
+# accumulate data
 #####################################################################
+
+: >"${TEMP_ACC_FILE}"
 
 cat "${TEMP_LIST_FILE}" |
   while read -r content_file; do
@@ -192,15 +198,46 @@ cat "${TEMP_LIST_FILE}" |
     else
       jq -c '.' "${content_file}"
     fi |
-      while read -r unit_data; do
-        printf '%s\n' "${unit_data}" >"${TEMP_UNITDATA_FILE}"
+      cat >>"${TEMP_ACC_FILE}"
+  done
 
-        if ! "${BODY_SCRIPT}" ${OPT_DRYRUN} \
-          "${PROJECT_NAME}" "${PROJECT_VERSION}" "${DEVICE_NAME}" \
-          "${TEMP_UNITDATA_FILE}"; then
-          printf "ERROR:${0##*/}: insert failed <%s,%s>" \
-            "${content_file}" "${unit_data}" 1>&2
-          exit 1
-        fi
-      done
+data_num=$(cat "${TEMP_ACC_FILE}" | wc -l)
+
+if [ "${data_num}" -le 0 ]; then
+  echo "ERROR:${0##*/}: no data found" 1>&2
+  exit 1
+fi
+
+#####################################################################
+# insert the first data
+#####################################################################
+
+cat "${TEMP_ACC_FILE}" | sed -n '1p' >"${TEMP_UNITDATA_FILE}"
+
+if ! "${BODY_SCRIPT}" ${OPT_DRYRUN} \
+   "${PROJECT_NAME}" "${PROJECT_VERSION}" "${DEVICE_NAME}" \
+   "${TEMP_UNITDATA_FILE}"; then
+   echo "ERROR:${0##*/}: insert the first data failed" 1>&2
+   exit 1
+fi
+
+if [ "${data_num}" -eq 1 ]; then
+  exit 0
+fi
+
+#####################################################################
+# insert the successor data
+#####################################################################
+
+cat "${TEMP_ACC_FILE}" | sed -n '1!p' |
+  while read -r unit_data; do
+    printf '%s\n' "${unit_data}" >"${TEMP_UNITDATA_FILE}"
+
+    if ! "${BODY_SCRIPT}" ${OPT_DRYRUN} -g \
+      "${PROJECT_NAME}" "${PROJECT_VERSION}" "${DEVICE_NAME}" \
+      "${TEMP_UNITDATA_FILE}"; then
+      printf "ERROR:${0##*/}: insert a data failed <%s,%s>" \
+        "${content_file}" "${unit_data}" 1>&2
+      exit 1
+    fi
   done

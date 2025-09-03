@@ -8,10 +8,11 @@ set -u
 print_usage_and_exit() {
   cat <<USAGE 1>&2
 Usage   : ${0##*/} <project name> <project version> <device name> <file>
-Options : 
+Options : -g
 
 Insert an evaluation data into the table.
 
+-g: Set the measure group id to the same one of the last data (default: new id).
 -d: Enable dry-run (only judge whether you can insert the data).
 USAGE
   exit 1
@@ -25,12 +26,14 @@ opr_p=''
 opr_v=''
 opr_n=''
 opr_f=''
+opt_g='no'
 opt_d='no'
 
 i=1
 for arg in ${1+"$@"}; do
   case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
+    -g)                  opt_g='yes'          ;;
     -d)                  opt_d='yes'          ;;
     *)
       if   [ $((i + 3)) -eq $# ] && [ -z "${opr_p}" ]; then
@@ -76,6 +79,7 @@ PROJECT_VERSION="${opr_v}"
 DEVICE_NAME="${opr_n}"
 JSON_FILE="${opr_f}"
 
+IS_SAME_GROUP="${opt_g}"
 IS_DRYRUN="${opt_d}"
 
 #####################################################################
@@ -239,6 +243,37 @@ if ! diff \
 fi
 
 #####################################################################
+# get the group id
+#####################################################################
+
+last_group_id=$(
+  db_refer_command "
+    SELECT measure_group_id
+    FROM ${abs_target_table_name}
+    ORDER BY measure_group_id DESC
+    LIMIT 1;"
+)
+
+exit_code=$?
+
+if [ "${exit_code}" -ne 0 ]; then
+  echo "ERROR:${0##*/}: get last group id failed" 1>&2
+  exit "${exit_code}"
+fi
+
+if [ -z "${last_group_id}" ]; then
+  echo "info:${0##*/}: the first insert to <${abs_target_table_name}>" 1>&2
+
+  next_group_id=1
+else
+  if [ "${IS_SAME_GROUP}" = 'yes' ]; then
+    next_group_id=${last_group_id}
+  else
+    next_group_id=$((last_group_id + 1))
+  fi
+fi
+
+#####################################################################
 # create insert command
 #####################################################################
 
@@ -256,6 +291,7 @@ insert_key_value_pairs=$(
       jq -c
 
     {
+      printf '{"key":"%s","value":"%s"}\n' 'measure_group_id' "${next_group_id}"
       printf '{"key":"%s","value":"%s"}\n' 'measure_date' "${this_date}"
       printf '{"key":"%s","value":"%s"}\n' 'validity' "${default_validity}"
       printf '{"key":"%s","value":"%s"}\n' 'image_id' "${image_id}"
