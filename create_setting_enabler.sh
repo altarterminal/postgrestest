@@ -30,7 +30,7 @@ opt_o='./enable_setting.sh'
 for arg in ${1+"$@"}; do
   case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
-    -s)                  opt_s="${arg#-s}"    ;;
+    -s)                  opt_s='yes'          ;;
     -k*)                 opt_k="${arg#-k}"    ;;
     -o*)                 opt_o="${arg#-o}"    ;;
     *)
