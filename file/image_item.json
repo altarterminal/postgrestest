@@ -1,5 +1,6 @@
 [
-  { "name": "image_id",     "type": "SERIAL"     },
-  { "name": "image_name",   "type": "TEXT"       },
-  { "name": "image_md5sum", "type": "VARCHAR(32)"}
+  { "name": "image_id",              "type": "SERIAL"      },
+  { "name": "image_relative_path",   "type": "TEXT"        },
+  { "name": "image_md5sum",          "type": "VARCHAR(32)" },
+  { "name": "image_description_url", "type": "TEXT"        }
 ]

@@ -1,6 +1,6 @@
 [
-  { "name": "realdevice_id",     "type": "SERIAL"      },
-  { "name": "realdevice_model",  "type": "VARCHAR(32)" },
-  { "name": "realdevice_rev",    "type": "VARCHAR(32)" },
-  { "name": "realdevice_serial", "type": "VARCHAR(8)"  }
+  { "name": "realdevice_id",     "type": "SERIAL"     },
+  { "name": "realdevice_model",  "type": "TEXT"       },
+  { "name": "realdevice_rev",    "type": "TEXT"       },
+  { "name": "realdevice_serial", "type": "VARCHAR(8)" }
 ]
