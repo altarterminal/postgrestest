@@ -110,6 +110,24 @@ if [ -z "$(jq '.out // empty' "${JSON_FILE}")" ]; then
 fi
 
 #####################################################################
+# check schema
+#####################################################################
+
+schema_names=$(db_refer_command '\dn')
+exit_code=$?
+
+if [ "${exit_code}" -ne 0 ]; then
+  echo "ERROR:${0##*/}: get schema names failed" 1>&2
+  exit "${exit_code}"
+fi
+
+if ! printf '%s\n' "${schema_names}" | sed -n '1!p' |
+  awk -F',' '{ print $1; }' | grep -q "^${SCHEMA_NAME}$"; then
+  echo "ERROR:${0##*/}: schema not exists <${SCHEMA_NAME}>" 1>&2
+  exit 1
+fi
+
+#####################################################################
 # create input description table
 #####################################################################
 
