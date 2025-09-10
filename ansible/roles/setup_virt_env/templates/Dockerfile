@@ -6,8 +6,8 @@ ARG proxy_setting="{{ proxy_setting }}"
 ARG pubkey_file_base="{{ pubkey_file_base }}"
 
 # settings for proxy
-RUN if [ -n "${proxy_setting}" ]; then echo 'Acquire::http::Proxy  "http://'"${proxy_setting}"'";' >> '/etc/apt/apt.conf'; fi
-RUN if [ -n "${proxy_setting}" ]; then echo 'Acquire::https::Proxy "http://'"${proxy_setting}"'";' >> '/etc/apt/apt.conf'; fi
+RUN if [ -n "${proxy_setting}" ]; then echo 'Acquire::http::Proxy  "'"${proxy_setting}"'";' >> '/etc/apt/apt.conf'; fi
+RUN if [ -n "${proxy_setting}" ]; then echo 'Acquire::https::Proxy "'"${proxy_setting}"'";' >> '/etc/apt/apt.conf'; fi
 
 # settings for packages
 RUN apt update && apt upgrade -y

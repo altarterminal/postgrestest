@@ -13,8 +13,8 @@
     mode: "0644"
     use_proxy: "{{ proxy_setting != '' }}"
   environment:
-    http_proxy: "http://{{ proxy_setting }}"
-    https_proxy: "http://{{ proxy_setting }}"
+    http_proxy: "{{ proxy_setting }}"
+    https_proxy: "{{ proxy_setting }}"
 
 - name: Prepare gpg directory
   ansible.builtin.file:

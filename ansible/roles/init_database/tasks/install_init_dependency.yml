@@ -11,5 +11,5 @@
     name:
       - psycopg2
   environment:
-    http_proxy: "http://{{ proxy_setting }}"
-    https_proxy: "http://{{ proxy_setting }}"
+    http_proxy: ""
+    https_proxy: ""
