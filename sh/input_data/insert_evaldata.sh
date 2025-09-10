@@ -8,7 +8,7 @@ set -u
 print_usage_and_exit() {
   cat <<USAGE 1>&2
 Usage   : ${0##*/} <project name> <project version> <device name> <file>
-Options : -l
+Options : -g -l -d
 
 Insert evaluation data into the table.
 Specify '-' to <file> if its content will be input from standard input.
@@ -25,6 +25,7 @@ Note.
   - evaldata.json can include multiple data in form of json's array.
   - if multiple data are inserted, the measure_group_id of them will be the same.
 
+-g: Set the measure group id to the same one of the last data (default: new id).
 -l: Specify the evaldata-file-name's list instead of evaldata-file.
 -d: Enable dry-run (only judge whether you can insert the data).
 USAGE
@@ -39,6 +40,7 @@ opr_p=''
 opr_v=''
 opr_n=''
 opr_f=''
+opt_g='no'
 opt_l='no'
 opt_d='no'
 
@@ -46,6 +48,7 @@ i=1
 for arg in ${1+"$@"}; do
   case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
+    -g)                  opt_g='yes'          ;;
     -l)                  opt_l='yes'          ;;
     -d)                  opt_d='yes'          ;;
     *)
@@ -99,6 +102,7 @@ PROJECT_VERSION="${opr_v}"
 DEVICE_NAME="${opr_n}"
 INPUT_FILE="${opr_f}"
 
+IS_SAME_GROUP="${opt_g}"
 IS_FILELIST="${opt_l}"
 IS_DRYRUN="${opt_d}"
 
@@ -128,6 +132,12 @@ TEMP_CONTENT_NAME="${TMPDIR:-/tmp}/${0##*/}_${THIS_DATE}_content_XXXXXX"
 TEMP_LIST_NAME="${TMPDIR:-/tmp}/${0##*/}_${THIS_DATE}_list_XXXXXX"
 TEMP_ACC_NAME="${TMPDIR:-/tmp}/${0##*/}_${THIS_DATE}_acc_XXXXXX"
 TEMP_UNITDATA_NAME="${TMPDIR:-/tmp}/${0##*/}_${THIS_DATE}_unitdata_XXXXXX"
+
+if [ "${IS_SAME_GROUP}" = 'yes' ]; then
+  OPT_SAME_GROUP='-g'
+else
+  OPT_SAME_GROUP=''
+fi
 
 if [ "${IS_DRYRUN}" = 'yes' ]; then
   OPT_DRYRUN='-d'
@@ -214,7 +224,7 @@ fi
 
 cat "${TEMP_ACC_FILE}" | sed -n '1p' >"${TEMP_UNITDATA_FILE}"
 
-if ! "${BODY_SCRIPT}" ${OPT_DRYRUN} \
+if ! "${BODY_SCRIPT}" ${OPT_SAME_GROUP} ${OPT_DRYRUN} \
    "${PROJECT_NAME}" "${PROJECT_VERSION}" "${DEVICE_NAME}" \
    "${TEMP_UNITDATA_FILE}"; then
    echo "ERROR:${0##*/}: insert the first data failed" 1>&2
