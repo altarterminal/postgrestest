@@ -8,9 +8,7 @@ db_host: "{{ ansible_host }}"
 db_port: "{{ common_setting.COMMON_DB_PORT }}"
 
 image_item_file:        "{{ project_dir }}/file/image_item.json"
-image_list_file:        "{{ project_dir }}/file/image_list.json"
 realdevice_item_file:   "{{ project_dir }}/file/realdevice_item.json"
-realdevice_list_file:   "{{ project_dir }}/file/realdevice_list.json"
 env_template_item_file: "{{ project_dir }}/file/env_template_item.json"
 
 manage_db_role_name:     "{{ common_setting.COMMON_MANAGE_DB_ROLE_NAME }}"
