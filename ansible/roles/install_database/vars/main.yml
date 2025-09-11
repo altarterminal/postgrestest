@@ -1,5 +1,5 @@
 ---
-user_name: "postgres"
+user_name: "{{ ansible_user }}"
 
 postgres_gpg_url:      "https://www.postgresql.org/media/keys/ACCC4CF8.asc"
 postgres_download_url: "https://apt.postgresql.org/pub/repos/apt"
