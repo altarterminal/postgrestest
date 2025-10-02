@@ -24,7 +24,7 @@ USAGE
 #####################################################################
 
 opr=''
-opt_s='yes'
+opt_i='no'
 opt_k='./key'
 opt_o='./enable_setting.sh' 
 
@@ -32,7 +32,7 @@ i=1
 for arg in ${1+"$@"}; do
   case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
-    -s)                  opt_s='no'           ;;
+    -i)                  opt_i='yes'          ;;
     -k*)                 opt_k="${arg#-k}"    ;;
     -o*)                 opt_o="${arg#-o}"    ;;
     *)
@@ -49,7 +49,7 @@ for arg in ${1+"$@"}; do
 done
 
 PARAM_FILE="${opr}"
-IS_ONLY_STABLE="${opt_s}"
+IS_INIT_TOO="${opt_i}"
 KEY_DIR="${opt_k}"
 ENABLER_FILE="${opt_o}"
 
@@ -121,16 +121,16 @@ if [ -z "${DATABASE_NET}" ]; then
 fi
 
 jq . "${TEMPLATE_SETTING_FILE}" |
-  jq '."DATABASE_HOST" = "'"${DATABASE_HOST}"'"' |
-  jq '."DATABASE_PORT" = "'"${DATABASE_PORT}"'"' |
-  jq '."DATABASE_NET" = "'"${DATABASE_NET}"'"' |
+  jq '."COMMON_DB_HOST" = "'"${DATABASE_HOST}"'"' |
+  jq '."COMMON_DB_PORT" = "'"${DATABASE_PORT}"'"' |
+  jq '."COMMON_DB_NET" = "'"${DATABASE_NET}"'"' |
   cat >"${COMMON_SETTING_FILE}"
 
 #####################################################################
 # ansible
 #####################################################################
 
-if [ "${IS_ONLY_STABLE}" = 'yes' ]; then
+if [ "${IS_INIT_TOO}" = 'no' ]; then
   : >"${ENABLER_FILE}"
 else
   if ! "${ANSIBLE_CREATE_FILE}" -k"${KEY_DIR}" -o"${ANSIBLE_ENABLER_FILE}"; then

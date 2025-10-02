@@ -202,6 +202,6 @@ EOF
 #####################################################################
 
 cat <<EOF >"${ENABLER_FILE}"
-export ANSIBLE_CONFIG="${CONFIG_FILE}"
-export ANSIBLE_PRIVATE_KEY_FILE="${SEC_KEY_FILE}"
+export ANSIBLE_CONFIG=${CONFIG_FILE}
+export ANSIBLE_PRIVATE_KEY_FILE=$(realpath "${SEC_KEY_FILE}")
 EOF
