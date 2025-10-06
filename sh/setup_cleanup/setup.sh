@@ -17,8 +17,8 @@ Options : -i -k<key dir> -o<setting enabler file>
 Check the environment of execution and create required files.
 
 -i: Enable the setting of initialization state (default: only for stable state).
--k: Specify the directory in which keys are (default: ./key)
--o: Specify the file to enable setting (default: ${TOP_DIR}/enable_setting.sh)
+-k: Specify the directory in which keys are (default: ./key).
+-o: Specify the file to enable setting (default: ${TOP_DIR}/enable_setting.sh).
 USAGE
   exit 1
 }
