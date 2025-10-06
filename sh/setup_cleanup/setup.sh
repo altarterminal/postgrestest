@@ -5,6 +5,10 @@ set -u
 # help
 #####################################################################
 
+THIS_DIR=$(dirname "$(realpath "$0")")
+SH_DIR=$(dirname "${THIS_DIR}")
+TOP_DIR=$(dirname "${SH_DIR}")
+
 print_usage_and_exit() {
   cat <<USAGE 1>&2
 Usage   : ${0##*/} <param file>
@@ -14,7 +18,7 @@ Check the environment of execution and create required files.
 
 -i: Enable the setting of initialization state (default: only for stable state).
 -k: Specify the directory in which keys are (default: ./key)
--o: Specify the file to enable setting (default: ./enable_setting.sh)
+-o: Specify the file to enable setting (default: ${TOP_DIR}/enable_setting.sh)
 USAGE
   exit 1
 }
@@ -26,7 +30,7 @@ USAGE
 opr=''
 opt_i='no'
 opt_k='./key'
-opt_o='./enable_setting.sh' 
+opt_o="${TOP_DIR}/enable_setting.sh"
 
 i=1
 for arg in ${1+"$@"}; do
@@ -57,10 +61,6 @@ ENABLER_FILE="${opt_o}"
 # setting
 #####################################################################
 
-THIS_DIR=$(dirname "$(realpath "$0")")
-SH_DIR=$(dirname "${THIS_DIR}")
-
-TOP_DIR=$(dirname "${SH_DIR}")
 ANSIBLE_DIR="${TOP_DIR}/ansible"
 TEMPLATE_DIR="${TOP_DIR}/template"
 
