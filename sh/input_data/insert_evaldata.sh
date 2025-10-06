@@ -146,7 +146,7 @@ else
 fi
 
 #####################################################################
-# prepare
+# prepare tmp file
 #####################################################################
 
 TEMP_CONTENT_FILE="$(mktemp "${TEMP_CONTENT_NAME}")"
@@ -162,7 +162,7 @@ trap '
 ' EXIT
 
 #####################################################################
-# prepare
+# check the existence of listed files and viadate them as json
 #####################################################################
 
 if [ "${IS_FILELIST}" = 'no' ]; then
@@ -180,18 +180,17 @@ else
     cat >"${TEMP_LIST_FILE}"
 fi
 
-cat "${TEMP_LIST_FILE}" |
-  while read -r content_file; do
-    if [ ! -f "${content_file}" ] || [ ! -r "${content_file}" ]; then
-      echo "ERROR:${0##*/}: invalid file specified <${content_file}>" 1>&2
-      exit 1
-    fi
+while read -r content_file; do
+  if [ ! -f "${content_file}" ] || [ ! -r "${content_file}" ]; then
+    echo "ERROR:${0##*/}: invalid file specified <${content_file}>" 1>&2
+    exit 1
+  fi
 
-    if ! jq . "${content_file}" >/dev/null 2>&1; then
-      echo "ERROR:${0##*/}: not follow the JSON format <${content_file}>" 1>&2
-      exit 1
-    fi
-  done
+  if ! jq . "${content_file}" >/dev/null 2>&1; then
+    echo "ERROR:${0##*/}: not follow the JSON format <${content_file}>" 1>&2
+    exit 1
+  fi
+done <"${TEMP_LIST_FILE}"
 
 #####################################################################
 # accumulate data
@@ -199,19 +198,18 @@ cat "${TEMP_LIST_FILE}" |
 
 : >"${TEMP_ACC_FILE}"
 
-cat "${TEMP_LIST_FILE}" |
-  while read -r content_file; do
-    is_list=$(jq 'type == "array"' "${content_file}")
+while read -r content_file; do
+  is_list=$(jq 'type == "array"' "${content_file}")
 
-    if [ "${is_list}" = 'true' ]; then
-      jq -c '.[]' "${content_file}"
-    else
-      jq -c '.' "${content_file}"
-    fi |
-      cat >>"${TEMP_ACC_FILE}"
-  done
+  if [ "${is_list}" = 'true' ]; then
+    jq -c '.[]' "${content_file}"
+  else
+    jq -c '.' "${content_file}"
+  fi |
+    cat >>"${TEMP_ACC_FILE}"
+done <"${TEMP_LIST_FILE}"
 
-data_num=$(cat "${TEMP_ACC_FILE}" | wc -l)
+data_num=$(wc -l "${TEMP_ACC_FILE}" | awk '{ print $1; }')
 
 if [ "${data_num}" -le 0 ]; then
   echo "ERROR:${0##*/}: no data found" 1>&2
@@ -222,7 +220,7 @@ fi
 # insert the first data
 #####################################################################
 
-cat "${TEMP_ACC_FILE}" | sed -n '1p' >"${TEMP_UNITDATA_FILE}"
+sed -n '1p' "${TEMP_ACC_FILE}" >"${TEMP_UNITDATA_FILE}"
 
 if ! "${BODY_SCRIPT}" ${OPT_SAME_GROUP} ${OPT_DRYRUN} \
    "${PROJECT_NAME}" "${PROJECT_VERSION}" "${DEVICE_NAME}" \
@@ -239,15 +237,14 @@ fi
 # insert the successor data
 #####################################################################
 
-cat "${TEMP_ACC_FILE}" | sed -n '1!p' |
+sed -n '1!p' "${TEMP_ACC_FILE}" |
   while read -r unit_data; do
     printf '%s\n' "${unit_data}" >"${TEMP_UNITDATA_FILE}"
 
     if ! "${BODY_SCRIPT}" ${OPT_DRYRUN} -g \
       "${PROJECT_NAME}" "${PROJECT_VERSION}" "${DEVICE_NAME}" \
       "${TEMP_UNITDATA_FILE}"; then
-      printf "ERROR:${0##*/}: insert a data failed <%s,%s>" \
-        "${content_file}" "${unit_data}" 1>&2
+      printf "ERROR:${0##*/}: insert a data failed <%s>" "${unit_data}" 1>&2
       exit 1
     fi
   done
